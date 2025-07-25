@@ -94,3 +94,13 @@ python -m robocorp.tasks run robots/reimbursement.py
 - **`RC_VAULT_SECRET_MANAGER=FileSecrets`**: 强制 `robocorp-vault` 从本地的 `secrets.json` 文件读取密钥。
 
 机器人运行成功后，详细的 HTML 日志会保存在 `output/log.html` 文件中，您可以打开它查看每个步骤的详细执行情况。
+
+### 启动本地业务系统 (Web App)
+
+本项目包含一个基于 Flask 的模拟业务系统，用于 RPA 交互和人工审核。要启动它，请运行：
+
+```bash
+python webapp/app.py
+```
+
+应用启动后，您可以在浏览器中访问 `http://127.0.0.1:5001` 来查看登录页面和审核队列。
