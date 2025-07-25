@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# Robocorp
+output/
+devdata/
+.robocorp/
+
+# IDEs
+.idea/
+.vscode/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Configuration - DO NOT COMMIT SENSITIVE KEYS
+config/config.yaml
+secrets.json

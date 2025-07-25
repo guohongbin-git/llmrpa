@@ -1,0 +1,10 @@
+robocorp-tasks
+robocorp-workitems
+robocorp-browser
+robocorp-vault
+requests
+PyYAML
+pytesseract
+Pillow
+pdf2image
+Flask

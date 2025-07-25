@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Review Failed Items</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Items Needing Review</h2>
+        <p>The following items failed during automated processing and require manual review.</p>
+        <table class="table table-bordered">
+            <thead class="thead-light">
+                <tr>
+                    <th>Work Item ID</th>
+                    <th>Input File</th>
+                    <th>Error Type</th>
+                    <th>Error Message</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.input_file }}</td>
+                    <td><span class="badge badge-danger">{{ item.error_type }}</span></td>
+                    <td>{{ item.error_message }}</td>
+                    <td>
+                        <a href="{{ url_for('review_item', item_id=item.id) }}" class="btn btn-primary btn-sm">Review</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">No items to review.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
