@@ -1,0 +1,181 @@
+invoice_types:
+  jipiao:
+    description: 用于提取机票费用信息。
+    fields:
+    - id: booking_date
+      label: 预订日期
+      required: true
+      type: date
+    - id: departure_city
+      label: 出发城市
+      required: true
+      type: string
+    - id: arrival_city
+      label: 到达城市
+      required: true
+      type: string
+    - id: total_amount
+      label: 总金额
+      required: true
+      type: number
+    llm_prompt_template: '从以下机票发票图片和文本中提取以下信息，并以JSON格式返回：预订日期、出发城市、到达城市、总金额。请严格以OCR文本为准，图片仅用于辅助理解和验证。
+
+      图片：{ image }
+
+      OCR文本1：{ ocr_text_1 }
+
+      OCR文本2：{ ocr_text_2 }'
+    name: 机票发票
+  standard_invoice:
+    fields:
+    - id: invoice_number
+      label: 发票号码
+      required: true
+      type: string
+    - id: amount
+      label: 金额
+      required: true
+      type: number
+    - format: YYYY-MM-DD
+      id: date
+      label: 日期
+      required: true
+      type: date
+    llm_prompt_template: '从以下发票图片和文本中提取以下信息，并以JSON格式返回：发票号码、金额、日期。请严格以OCR文本为准，图片仅用于辅助理解和验证。
+
+      图片：{{ image }}
+
+      OCR文本：{{ ocr_text_1 }}
+
+      OCR文本2：{{ ocr_text_2 }}
+
+      '
+    name: 标准增值税发票
+  train_ticket:
+    name: 火车票
+    description: "用于提取火车票的关键信息，包括乘客、车次、座位和时间。"
+    fields:
+      - id: ticket_number
+        label: 票号
+        type: string
+        required: true
+      - id: passenger_name
+        label: 乘客姓名
+        type: string
+        required: true
+      - id: train_number
+        label: 车次
+        type: string
+        required: true
+      - id: seat_number
+        label: 座位号
+        type: string
+        required: true
+      - id: departure_station
+        label: 出发站
+        type: string
+        required: true
+      - id: arrival_station
+        label: 到达站
+        type: string
+        required: true
+      - id: departure_datetime
+        label: 出发时间
+        type: string
+        required: true
+      - id: price
+        label: 票价
+        type: number
+        required: true
+    llm_prompt_template: |
+      从以下火车票图片和OCR文本中，提取结构化的信息。请严格按照指定的JSON格式返回，所有字段都必须存在。
+      如果信息不存在，请返回空字符串 "" 或 null。
+
+      **JSON格式:**
+      ```json
+      {
+        "ticket_number": "票号",
+        "passenger_name": "乘客姓名",
+        "train_number": "车次",
+        "seat_number": "座位号，例如 '15车 11F号'",
+        "departure_station": "出发站名称",
+        "arrival_station": "到达站名称",
+        "departure_datetime": "出发日期和时间，格式为 'YYYY-MM-DD HH:MM'",
+        "price": "票价金额"
+      }
+      ```
+
+      **核心指令:**
+      - **以OCR文本为准:** 提取任务的核心是处理文字，必须完全依赖下方提供的OCR文本。图片仅用于在文字无法辨认时提供视觉辅助，绝不能作为主要信息来源。
+      - **出发时间:** 请务必结合日期和时间，并以 'YYYY-MM-DD HH:MM' 的格式输出。
+      - **座位号:** 请包含车厢和座位信息。
+
+      **图片:**
+      {image}
+
+      **OCR文本1:**
+      {ocr_text_1}
+
+      **OCR文本2:**
+      {ocr_text_2}
+  vat_general_invoice:
+    description: 用于提取增值税普通发票的关键信息。
+    fields:
+    - id: invoice_number
+      label: 发票号码
+      required: true
+      type: string
+    - id: issue_date
+      label: 开票日期
+      required: true
+      type: date
+    - id: goods_or_taxable_service_name
+      label: 货物或应税劳务/服务名称
+      required: true
+      type: string
+    - id: seller_name
+      label: 销售方名称
+      required: true
+      type: string
+    - id: buyer_name
+      label: 购买方名称
+      required: true
+      type: string
+    - id: total_amount_nett_incl_tax
+      label: 价税合计（小写金额）
+      required: true
+      type: number
+    llm_prompt_template: "从以下发票图片和文本中提取结构化信息。请确保严格按照指定的JSON格式返回数据，所有字段都必须存在，即使值为空。\n\
+      \n**JSON格式:**\n```json\n{\n  \"invoice_number\": \"发票号码\",\n  \"issue_date\"\
+      : \"开票日期\",\n  \"goods_or_taxable_service_name\": \"货物或应税劳务/服务名称\",\n  \"seller_name\"\
+      : \"销售方名称\",\n  \"buyer_name\": \"购买方名称\",\n  \"total_amount_nett_incl_tax\"\
+      : \"价税合计（小写金额，请提取与发票上“价税合计（大写）”对应的“小写”金额，这是发票的最终总金额）\"\n}\n```\n\n**发票图片:**\n\
+      { image }\n\n**OCR文本:**\n{ ocr_text_1 }\n{ ocr_text_2 }\n"
+    name: 增值税普通发票
+  xingchengdan:
+    description: 用于提取行程单发票的关键信息。
+    fields:
+    - id: start_date
+      label: 开始日期
+      required: true
+      type: date
+    - id: end_date
+      label: 结束日期
+      required: true
+      type: date
+    - id: total_amount
+      label: 总金额
+      required: true
+      type: number
+    - id: city
+      label: 城市
+      required: true
+      type: string
+    llm_prompt_template: '从以下行程单图片和文本中提取以下信息，并以JSON格式返回：开始日期、结束日期、总金额、城市。请严格以OCR文本为准，图片仅用于辅助理解和验证。
+
+      图片：{ image }
+
+      OCR文本1：{ ocr_text_1 }
+
+      OCR文本2：{ ocr_text_2 }'
+    name: 行程单发票

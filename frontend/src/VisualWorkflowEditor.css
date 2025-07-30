@@ -1,0 +1,67 @@
+/* 工作流编辑器样式 */
+.step-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 10px 0;
+}
+
+.step-card {
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background-color: #fff;
+}
+
+.step-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.drag-handle {
+  cursor: grab;
+  padding: 0 10px;
+  font-size: 18px;
+  color: #6c757d;
+  margin-right: 10px;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.step-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.param-badge {
+  margin-right: 8px;
+  margin-bottom: 8px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.yaml-editor {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+}
+
+/* 模态框样式 */
+.step-modal .modal-content {
+  border-radius: 8px;
+}
+
+.step-modal .modal-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.step-modal .modal-footer {
+  background-color: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+}

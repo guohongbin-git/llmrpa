@@ -37,12 +37,12 @@ def process_single_item(item):
 
         # 1. Data Acquisition Module
         file_path = item.payload.get("file_path")
-        if not file_path:
-            raise ValueError("file_path not found in work item payload.")
+        if not file_path or not os.path.exists(file_path):
+            raise FileNotFoundError(f"File not found at path: {file_path}")
         logging.info(f"Acquired file: {file_path}")
 
         # 2. Intelligent Recognition & Extraction Module
-        extracted_data = call_ai_extraction_service(file_path)
+        extracted_data = extract_document_data(file_path)
         logging.info(f"Extracted data: {extracted_data}")
 
         # 3. Business System Interaction Module
@@ -104,45 +104,51 @@ def submit_reviewed_data(invoice_number: str, amount: str, date: str):
 
 from robocorp.browser import page
 
+def login_to_system():
+    """Logs into the reimbursement system."""
+    logging.info("Attempting to log in...")
+    page().fill("#username", "user")
+    page().fill("#password", "password")
+    page().click("button[type=submit]")
+    page().wait_for_selector("#invoice_number")
+    logging.info("Login successful.")
+
+def fill_reimbursement_form(data: dict):
+    """Fills out the reimbursement form with the provided data."""
+    logging.info("Filling out reimbursement form...")
+    page().fill("#invoice_number", str(data.get("invoice_number", "")))
+    page().fill("#amount", str(data.get("amount", "")))
+    page().fill("#date", str(data.get("date", "")))
+    page().click("button:text('Submit Claim')")
+    logging.info("Claim form submitted.")
+
+def verify_submission() -> str:
+    """Verifies the submission and returns a confirmation message."""
+    page().wait_for_selector(".alert-success")
+    success_message = page().locator(".alert-success").text_content()
+    logging.info(f"Got confirmation message: {success_message}")
+    return success_message
+
 def interact_with_business_system(data: dict) -> str:
     """
     Interacts with the local web reimbursement system to file a claim.
     """
     try:
-        # The server is running on port 5001
         url = "http://127.0.0.1:5001/"
         logging.info(f"Opening browser to interact with local reimbursement system at {url}")
         page().goto(url)
 
-        # 1. Login
-        logging.info("Attempting to log in...")
-        page().fill("#username", "user")
-        page().fill("#password", "password")
-        page().click("button[type=submit]")
+        login_to_system()
+        fill_reimbursement_form(data)
+        verify_submission()
 
-        # 2. Wait for the form page and fill it
-        page().wait_for_selector("#invoice_number")
-        logging.info("Login successful. Filling out reimbursement form...")
-        
-        page().fill("#invoice_number", str(data.get("invoice_number", "")))
-        page().fill("#amount", str(data.get("amount", "")))
-        page().fill("#date", str(data.get("date", "")))
-
-        # 3. Submit the form
-        page().click("button:text('Submit Claim')")
-        logging.info("Claim form submitted.")
-
-        # 4. Verify submission success
-        page().wait_for_selector(".alert-success")
-        success_message = page().locator(".alert-success").text_content()
-        logging.info(f"Got confirmation message: {success_message}")
-
-        # Return the invoice number as a confirmation ID
         return str(data.get("invoice_number", ""))
 
     except Exception as e:
         logging.error(f"An error occurred during browser interaction: {e}")
-        page().screenshot(output_dir="output", path="error_screenshot.png")
+        # 确保输出目录存在
+        os.makedirs("output", exist_ok=True)
+        page().screenshot(path="output/error_screenshot.png")
         raise
     finally:
         logging.info("Finished browser interaction.")

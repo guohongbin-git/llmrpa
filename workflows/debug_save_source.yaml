@@ -1,0 +1,13 @@
+description: "[DEBUG] 保存登录页面的HTML源代码以供分析。"
+id: debug_save_source
+name: 调试 - 保存页面源代码
+steps:
+- action: browser_configure
+  name: 配置可见的浏览器
+  params:
+    headless: false
+- action: debug_save_page_source
+  name: 保存登录页HTML
+  params:
+    url: https://oa.topprismdata.com/seeyon/index.jsp
+    output_path: "output/page_source.html"

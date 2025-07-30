@@ -1,0 +1,139 @@
+- name: 在 #login_username 中输入 郭红波
+  action: browser_fill_form
+  params:
+    selector: "#login_username"
+    value: "郭红波"
+  on_error: review
+
+- name: 在 #login_username 中输入 guohb
+  action: browser_fill_form
+  params:
+    selector: "#login_username"
+    value: "guohb"
+  on_error: review
+
+- name: 在 #login_username 中输入 guohb@topprism.com
+  action: browser_fill_form
+  params:
+    selector: "#login_username"
+    value: "guohb@topprism.com"
+  on_error: review
+
+- name: 在 #login_username 中输入 guohb@topprism.com
+  action: browser_fill_form
+  params:
+    selector: "#login_username"
+    value: "guohb@topprism.com"
+  on_error: review
+
+- name: 在 #login_password1 中输入 LJSJ@123456
+  action: browser_fill_form
+  params:
+    selector: "#login_password1"
+    value: "LJSJ@123456"
+  on_error: review
+
+- name: 在 #login_password1 中输入 LJSJ@123456
+  action: browser_fill_form
+  params:
+    selector: "#login_password1"
+    value: "LJSJ@123456"
+  on_error: review
+
+- name: 点击 LJCW04-差旅费报销单
+  action: browser_click
+  params:
+    selector: "a"
+    text: "LJCW04-差旅费报销单"
+  on_error: review
+
+- name: 点击 棱镜极智能（北京）
+  action: browser_click
+  params:
+    selector: "div.cap4-select__option"
+    text: "棱镜极智能（北京）"
+  on_error: review
+
+- name: 在 输入框中输入 c
+  action: browser_fill_form
+  params:
+    selector: "input.is-active"
+    value: "c"
+  on_error: review
+
+- name: 在 输入框中输入 空字符串
+  action: browser_fill_form
+  params:
+    selector: "input.is-active"
+    value: ""
+  on_error: review
+
+- name: 在 输入框中输入 出差
+  action: browser_fill_form
+  params:
+    selector: "input.is-active"
+    value: "出差"
+  on_error: review
+
+- name: 在 输入框中输入 出差
+  action: browser_fill_form
+  params:
+    selector: "input.is-active"
+    value: "出差"
+  on_error: review
+
+- name: 点击 导入数据
+  action: browser_click
+  params:
+    selector: "span"
+    text: "导入数据"
+  on_error: review
+
+- name: 点击 选择文件
+  action: browser_click
+  params:
+    selector: "span"
+    text: "选择文件"
+  on_error: review
+
+- name: 点击 确定
+  action: browser_click
+  params:
+    selector: "#b1"
+    text: "确定"
+  on_error: review
+
+- name: 点击 下一步
+  action: browser_click
+  params:
+    selector: "#layui-layer-btn-next"
+    text: "下一步"
+  on_error: review
+
+- name: 点击 确定
+  action: browser_click
+  params:
+    selector: "#layui-layer-btn-sure"
+    text: "确定"
+  on_error: review
+
+- name: 点击 附件
+  action: browser_click
+  params:
+    selector: "div.icon.CAP.cap-icon-fujian"
+    text: ""
+  on_error: review
+
+- name: 点击 确定
+  action: browser_click
+  params:
+    selector: "#b1"
+    text: "确定"
+  on_error: review
+
+- name: 点击 保存待发
+  action: browser_click
+  params:
+    selector: "#saveDraft_span"
+    text: "保存待发"
+  on_error: review

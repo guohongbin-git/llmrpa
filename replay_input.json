@@ -1,0 +1,13 @@
+[
+  {
+    "payload": {
+      "workflow_file": "replay.yaml",
+      "file_paths": [
+        "/Users/guohongbin/projects/llmrpa/devdata/receipts/jipiao.pdf",
+        "/Users/guohongbin/projects/llmrpa/devdata/receipts/vat_invoice.png",
+        "/Users/guohongbin/projects/llmrpa/devdata/receipts/train_ticket.jpg"
+      ]
+    },
+    "files": {}
+  }
+]

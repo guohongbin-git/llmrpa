@@ -1,0 +1,2315 @@
+<!DOCTYPE html><html class="h100b over_hidden"><head>
+    <meta http-equiv="X-UA-Compatible" content="IE=EDGE">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="renderer" content="webkit">
+
+    <script src="/seeyon/rest/global/v1/env" type="text/javascript"></script>
+<link rel="stylesheet" type="text/css" href="/seeyon/common/all-min.css?V=V8_2SP1_231013_1903070">
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/seeyon/portal/management/css/iconfont.css?V=V8_2SP1_231013_1903070"/>
+<![endif]-->
+<link rel="icon" type="image/x-icon" href="/seeyon/common/images/A8/favicon.ico?V=V8_2SP1_231013_1903070">
+<!--[if (!IE)|(gte IE 9)]><!-->
+<!-- <link rel="stylesheet" type="text/css" 	href="/seeyon/skin/dist/common/special-notIE8.css?V=V8_2SP1_231013_1903070"> -->
+<!--<![endif]-->
+<link rel="stylesheet" href="/seeyon/skin/dist/min/skinComponents-defaultTheme-min.css?V=V8_2SP1_231013_1903070">
+<link rel="stylesheet" type="text/css" href="/seeyon/common/css/ddPeoCardSelect2Animate.css?V=V8_2SP1_231013_1903070">
+<!--[if lt IE 9]>
+<link rel="stylesheet" type="text/css" 	href="/seeyon/common/ctpUi/dist/css/ctpUi4IE8.css?V=V8_2SP1_231013_1903070">
+<![endif]-->
+<!--[if (!IE)|(gte IE 9)]><!-->
+<link rel="stylesheet" type="text/css" href="/seeyon/common/ctpUi/dist/css/ctpUi.css?V=V8_2SP1_231013_1903070">
+<!--<![endif]--><script type="text/javascript">
+  var isSecretLevelEnable = false;
+  var CSRFTOKEN = 'null';
+  var APPID = '4095';
+  var _ctxPath = '/seeyon', _ctxServer = 'http://oa.topprismdata.com:80/seeyon';
+  var _staticPath = _ctxPath;
+  var _staticSuffix = '?V=V8_2SP1_231013_1903070';
+  var _locale = 'zh_CN',_isDevelop = false,_sessionid = '',_isModalDialog = false;
+  var _editionI18nSuffix = '';
+  
+  var _resourceCode = "";
+  var seeyonProductId="1";
+  </script>
+
+<script type="text/javascript">
+ var setFlag=false;
+  if(typeof Set!="undefined"){
+     var SysSet=Set;
+     setFlag=true;
+  }
+ </script>
+<script type="text/javascript" charset="UTF-8" src="/seeyon/common/js/polyfill.min.js?V=V8_2SP1_231013_1903070"></script>
+
+<script type="text/javascript" src="/seeyon/common/all-min.js?V=V8_2SP1_231013_1903070"></script>
+  <script type="text/javascript" src="/seeyon/common/ctpUi/dist/js/ctpUi.min.js?V=V8_2SP1_231013_1903070"></script>
+<script type="text/javascript" src="/seeyon/main.do?method=headerjs&amp;login=1013293424"></script>
+<script type="text/javascript">
+
+var addinMenus = new Array();
+
+
+$.ctx._currentPathId = 'collaboration_collaboration_newColl';
+$.ctx._pageSize = 20;
+
+$.ctx._emailShow = true;
+$.ctx.fillmaps = null;
+$.releaseOnunload();
+</script>
+<title>新建页面</title>
+
+	<link rel="stylesheet" href="/seeyon/apps_res/collaboration/css/newCollaboration-all-min.css?V=V8_2SP1_231013_1903070">
+
+	<script type="text/javascript">
+/**
+ * 调用模板，如新建协同的调用模板页面,只能选择一个模板
+ * @param category {link TemplateCategory.TYPE}
+ * @param accountId 单位ID，不传值默认为当前用户的登录单位
+ * @return 模板ID，如12345
+ */
+function callTemplate(category,accountId,callback){
+    var ur='/seeyon/template/template.do?method=templateChoose&category='+category+'';
+    if ( typeof(accountId)!='undefined'){
+        ur+='&accountId='+accountId;
+    }
+    var dialog = $.dialog({
+        url:ur,
+        width: document.documentElement.clientWidth || document.body.clientWidth,
+        height: (document.documentElement.clientHeight || document.body.clientHeight) - 120,
+        title: "调用模板",//调用模板
+        targetWindow: getCtpTop(),
+        buttons: [{
+            text: "确定", //确定
+            btnType:1,
+            isEmphasize:true,
+            handler: function () {
+               isFormSubmit = false;
+               var rv = dialog.getReturnValue();
+               if("notclicktemplate" == rv){
+            	   $.messageBox({
+           	        'type' : 0,
+           	        'title':"系统提示",
+           	        'msg' : "请选择一个模板",
+           	        'imgType':2,
+           	        ok_fn : function() {
+           	        }
+           	      });
+            	  return;
+               }
+               
+               if(!rv){
+            	   return;//页面没加载完的时候直接返回
+               }
+               var __bodyType = rv["bodyType"];
+               rv = rv["templateId"];
+               
+               //本地是否安装的永中office，并且模板正文是wps正文则给出提示并返回
+               var isYozoWps = checkIsYoZoWps(__bodyType);
+               var isYoZoOffice = false;
+               if(typeof parent.isYoZoOffice == 'function'){
+                   isYoZoOffice = parent.isYoZoOffice();
+               }
+               if(isYozoWps && isYoZoOffice){
+            	   //对不起，您本地office软件不支持当前所选模板的正文类型！
+            	   $.alert("对不起，您本地office软件不支持当前所选模板的正文类型！");
+            	   return;
+               }
+               if(callback){
+            	   callback(rv);
+               }
+               dialog.close();
+            }
+        }, {
+            text: "取消", //取消
+            handler: function () {
+                isFormSubmit = true;
+                dialog.close();
+            }
+        }]
+    });
+}
+function checkIsYoZoWps(bodyType){
+	
+	var retValue=false;
+	if(bodyType && (bodyType == "43" || bodyType == "44")){
+		retValue = true; 
+	}
+	return retValue;
+}
+function setButtonStyle(){
+    $(":li").removeClass("current");
+}
+ 
+ //使用说明
+ function showWorkFlowDesc(){
+     $("#content_view_li").removeClass("current border_b last_tab");
+     $("#workflow_view_li").addClass("current border_b last_tab");
+     $("#display_content_view").hide();
+     $("#display_workflow_view").show();
+ } 
+
+
+ /**
+ *模板左右选择组件,参数没有就传null
+ *@param callback 回调函数
+ *@param isMul 是否支持多选，默认为true
+ *@param moduleType 模板分类，取ModuleType的枚举值Key
+ *@param accountId 单位ID，默认为当前登录单位ID
+ *@param scope 数据范围：枚举值["MemberUse","MaxScope","MemberAnalysis"]
+ *@param excludeTemplateIds : 不包含的模板ID，以，分隔的字符串，eg:123232,12121,43,21212 不宜太多，10个以下为好
+ *@param reportId:报表ID，F8专用
+ *@param rew
+ *@param isCanSelectCategory  是否支持选择文件夹，默认false
+ *@param isComponent  
+ *@param tids  选择的模板id
+ *@param maxSelect 允许最大选择模板数量
+ *@param memberId 选择模板的人员，如果不传递，默认当前人员
+ *@param showOldEdocTemplate true:显示老公文模板
+ *@param templateTypes 过滤ctp_template.type，多个情况下以,分隔
+ *@param opeEdocRoot 默认展开公文根目录
+ *@param params:扩展参数字段
+ 			state 显示停用还是启用,多个数据使用逗号分割(TemplateEnum.state)
+ 			hasAuth 是否考虑授权
+ 			isAll 取消单位限制(MaxScope默认是指显示当前登录单位)
+ 			hasAppLinkTemplate 是否显示应用审批模板,默认显示
+ */
+/**
+*回显数据
+*var templateOrginalData=new Object();
+*templateOrginalData["ids"]  = ids;  ids:以,分隔的ID串
+*templateOrginalData["names"]= names; names:以数组Array的形式传入
+*templateOrginalData["namesDisplay"] = namesDisplay;模板组件返回给外层应用的显示数据，外层应用不需要传入
+*/
+ var templateOrginalData ; 
+ function templateChoose(callback,moduleType,isMul,accountId,scope,excludeTemplateIds,reportId,isCanSelectCategory,isComponent,tids,maxSelect,memberId,showOldEdocTemplate,templateTypes,opeEdocRoot, params){
+	  var ur='/seeyon/template/template.do?method=templateChooseMul';
+	  if(typeof(isComponent)=='undefined' || isComponent == null || isComponent==''){
+		  ur+="&isComponent=Y";
+	  }else{
+		  ur+="&isComponent="+isComponent;
+	  }
+	  //if(typeof(tids)!='undefined' && tids != null) ur+="&_tids="+tids;
+      if(typeof(moduleType)!='undefined' && moduleType != null) ur+="&moduleType="+moduleType;
+      if(typeof(isMul)!='undefined' && isMul!= null) ur+="&isMul="+isMul;
+      if(typeof(accountId)!='undefined' && accountId != null) ur+="&accountId="+accountId;
+      if(typeof(scope)!='undefined' && scope != null) ur+="&scope="+scope;
+      if(typeof(excludeTemplateIds)!='undefined' && excludeTemplateIds != null ) ur+="&excludeTemplateIds="+excludeTemplateIds;
+      if(typeof(reportId)!='undefined' && reportId != null) ur+="&reportId="+reportId;
+      if(typeof(isCanSelectCategory)!='undefined' && isCanSelectCategory != null) ur+="&isCanSelectCategory="+isCanSelectCategory;
+      if(typeof(memberId)!='undefined' && memberId != null) {
+    	  ur+="&memberId="+memberId;
+      }
+      if(typeof(showOldEdocTemplate)!='undefined' && showOldEdocTemplate != null) {
+    	  ur+="&showOldEdocTemplate="+showOldEdocTemplate;
+      }
+      if(typeof(templateTypes)!='undefined' && templateTypes != null) {
+    	  ur+="&templateTypes="+templateTypes;
+      }
+      if(typeof(opeEdocRoot)!='undefined' && opeEdocRoot != null) {
+    	  ur+="&opeEdocRoot="+opeEdocRoot;
+      }
+      if(typeof(params)!='undefined' && params != null) {
+	      if(typeof(params.state)!='undefined' && params.state != null) {
+	    	  ur+="&state="+params.state;
+	      }
+	      if(typeof(params.hasAuth)!='undefined' && params.hasAuth != null) {
+	    	  ur+="&hasAuth="+params.hasAuth;
+	      }
+	      if(typeof(params.isAll)!='undefined' && params.isAll != null) {
+	    	  ur+="&isAll="+params.isAll;
+	      }
+	      if(typeof(params.hasAppLinkTemplate)!='undefined' && params.hasAppLinkTemplate != null) {
+	    	  ur+="&hasAppLinkTemplate="+params.hasAppLinkTemplate;
+	      }
+      }
+     if(typeof canShowForm != "undefined" && canShowForm != ""){
+         ur = ur + "&canShowForm="+ canShowForm;
+     }else{
+    	 ur = ur + "&canShowForm=true";
+     }
+      var ids = "";
+      var names = "";
+     if (typeof(tids)!='undefined' && tids != null){
+         ids = tids;
+        } else if(typeof(templateOrginalData)!='undefined' && templateOrginalData != null ){
+    	  ids = templateOrginalData["ids"];
+    	  names = templateOrginalData["names"];
+      }
+	  var dialog = $.dialog({
+          url : ur,
+          title: "选择模板", //选择模版
+          width: 760,
+          height: 500,
+          transParams: {'_tids':ids , '_tnames':names},
+          targetWindow:getCtpTop(),
+          buttons: [{
+              isEmphasize:true,
+              text: "确定", //确定
+              handler: function () {
+            	  var tempalteDate = dialog.getReturnValue();
+            	if(tempalteDate["ids"].length<1){
+                    //您至少需要选择一个模版!
+            	    $.alert("您至少需要选择一个模版!");
+            		return;
+            	}
+            	if(maxSelect){
+            		var arrIds = tempalteDate["ids"].split(",");
+                	if(arrIds.length > maxSelect){
+                		//超出了最大选择模板数量范围提示
+                        $.alert($.i18n("template.templateChoose.maxQuantity",arrIds.length,maxSelect));
+                		return;
+                	}
+            	}
+            	templateOrginalData = tempalteDate;
+              	if(callback){
+              		callback(templateOrginalData["ids"],templateOrginalData["names"],templateOrginalData["namesDisplay"]);
+              	}
+                 dialog.close();
+              }
+          }, {
+              text: "取消", //取消
+              handler: function () {
+                 // V5-36437 建议不清空选项
+                  dialog.close();
+              }
+          }],
+          minParam: {
+              show: false
+          },
+          maxParam: {
+              show: false
+          }
+      }); 
+ }
+ function checkTemplateCanUse(templateId){
+	  var strFlag = callBackendMethod("colManager","checkTemplateCanUse",templateId);
+	   if(strFlag != null &&  strFlag.flag =='cannot'){
+	      return false;
+	   }else{
+	      return true;
+	   }
+	  
+ }
+</script>
+<script>
+ var prinOcx=false;
+ function _cleanA(str) {
+
+    // 附件鼠标移入移除效果
+    if(str){
+        var mLeave = / onmouseleave=[^>]*?(?=[ >])/ig;
+        var mEnter = / onmouseenter=[^>]*?(?=[ >])/ig;
+        str = str.replace(mLeave, "");
+        str = str.replace(mEnter, "");
+    }
+
+    var position = str.indexOf("<a>");
+    if (position == -1) {
+        return str;
+    }
+    var leftstr = str.substr(0, position - 1);
+    var rightstr = str.substr(position);
+    var nextposition = rightstr.indexOf("</a>");
+    var laststr = rightstr.substr(nextposition + 4);
+    return cleanSpecial(_cleanA(leftstr + laststr));
+ }
+
+
+	//打印
+	//新建事项中打印映射
+	function newDoPrint(printFrom){
+		/* html(10,"标准格式正文HTML"),
+		form(20,"表单格式正文"),
+		txt(30,"text正文"),
+		officeWord(41,"officeWord正文"),
+		officeExcel(42,"officeExcel正文"),
+		wpsWord(43,"wpsWord正文"),
+		wpsExcel(44,"wpsExcel正文"); */
+		var type="";
+		if(printFrom.indexOf("summary")!=-1){
+	    	type = bodyType;
+		}
+
+		if(printFrom=="newCol"){
+			var fnx;
+	        if($.browser.mozilla){
+	            fnx = document.getElementById("zwIframe").contentWindow;
+	        }else{
+	            fnx = document.zwIframe;
+	        }
+	        if(fnx.getMainBodyDataDiv$){
+				var contentDiv = fnx.getMainBodyDataDiv$();
+			    type = $("#contentType", contentDiv).val();
+	        }else{
+	            // CAP4显示成表单
+	            type = "20";
+	        }
+		}
+		var isHTML = false;
+		var isForm = false;
+		var preBodyFragArr="";
+		var afterBodyFragArr="";
+		if(type=="10"){ isHTML = true;}
+		if(type=="20"){ isForm = true;}
+		if(isHTML){
+			var pl = _createPrintFragment(printFrom);
+			_doPrint(pl.get(0),pl.get(1), "", printFrom);
+		}else{
+			if(isForm){//打印表单
+				 var isOffice = $("#zwOfficeIframe").css("display");
+				 var hasFocus = $("#zwOfficeIframe").attr("hasFocus");
+				 if(isOffice=="block" && hasFocus=="true"){//如果是表单的office正文
+					var prePrintDialog = $.dialog({
+						id: 'url',
+						url: "/seeyon/collTemplate/collTemplate.do?method=showPrintSelector&isForm=false",
+						width: 260,
+						height: 150,
+						title: "打印选项",
+						targetWindow:getCtpTop(),
+						buttons: [{
+						    text: "确定",
+						    handler: function () {
+						       var rv = prePrintDialog.getReturnValue();
+						       if(rv){
+                                    if(rv == "mainpp"){//打印office
+                                 if(printFrom=="newCol"){
+                                     window.frames["zwOfficeIframe"].window.OfficeAPI.officePrint();
+                                 }else{
+                                     window.frames["zwOfficeIframe"].window.OfficeAPI.officePrint();
+                                 }
+                             }else{//打印意见
+
+                                 var pl = _createPrintFragment(printFrom);
+                                 _doPrint(pl.get(0),pl.get(1), "colPrint", printFrom);
+                             }
+                         }
+                             prePrintDialog.close();
+                         }
+						}, {
+						    text: "取消",
+						    handler: function () {
+						        prePrintDialog.close();
+						    }
+						}]
+					});
+					$("#zwIframe").css("visibility","visible");
+				}else{
+ 				    var pl = _createPrintFragment(printFrom);
+ 				   _doPrint(pl.get(0), pl.get(1), "", printFrom);
+				}
+			}else{
+                var officeTransIframeDom = "";
+                if($("#zwIframe").get(0).contentWindow!=null) {
+                    
+                    officeTransIframeDom = $("#zwIframe").get(0).contentWindow && $("#zwIframe").get(0).contentWindow.document.getElementById("officeTransIframe");
+
+                    //1、officeTransIframeDom判断开启office转换、isWpsTransTypeV2判断是否是金山预览（wps），即当前走前端在线打印控件
+                    if (officeTransIframeDom != null && !isWpsTransTypeV2()) {
+                        var xmlns = officeTransIframeDom.contentWindow.document.getElementById("htmlFrame").contentWindow.document.querySelector("html").getAttribute("xmlns:x");
+                        if (!(xmlns != null && xmlns.indexOf("urn:schemas-microsoft-com:office:excel") >= 0)) {
+                            _printByOnLineTrans(printFrom);
+                            return void (0);
+                        }
+                    }
+                }
+				var prePrintDialog = $.dialog({
+					id: 'url',
+					url: "/seeyon/collTemplate/collTemplate.do?method=showPrintSelector&isForm="+isForm,
+					width: 260,
+					height: 120,
+					title: "打印选项",
+					targetWindow:getCtpTop(),
+					buttons: [{
+					    text: "确定",
+					    handler: function () {
+					       var rv = prePrintDialog.getReturnValue();
+					       if(rv && rv == "mainpp"){
+                               var _zwIframeObj = $("#zwIframe")[0].contentWindow;
+                               var paramStr = null;
+                               if (officeTransIframeDom != null) {
+                                   paramStr = $(_zwIframeObj.document).find(".officeparam").attr("param");
+                                   popupContentWin(true);
+                               } else {
+                                   paramStr = $(_zwIframeObj.document).find("#wpsParams").attr("param");
+                               }
+                               //兼容IE
+                               if (!paramStr||paramStr==undefined){
+                                   paramStr="";
+                               }
+                               var paramObj = $.parseJSON('{' + paramStr + '}');
+
+                               //odf正文格式打印单独做处理，弹窗提示（打印正文 还是 打印意见区）
+                               if (type=="46"){
+                                   //V5-6411 新建协同，正文选择ofd后 点击打印正文。没有效果
+                                   var isLoadOfdComplete = setInterval(function(){
+                                       if(_zwIframeObj.OfdAPI.hasOpenOfdComplete()){
+                                           _zwIframeObj.OfdAPI.printOfd();
+                                           clearInterval(isLoadOfdComplete);
+                                       }
+                                   },1000);
+                               } else if(type=="45"){
+                                   //PDF需要单独判断，不论个人设置中webOffice是否启动，都用金格打开，打印
+                                   //TODO：IE11下有闪烁问题，未解决
+                                   if (window.newColl) {
+                                       _zwIframeObj.PdfAPI.pdfFullSize(false, function() {
+                                            _zwIframeObj.PdfAPI.pdfPrint();
+                                            prePrintDialog.close();
+                                       });
+                                   } else {
+                                      var useWeboffice= _zwIframeObj.PdfAPI.canUseWebOfficeForPdfAync({webRoot:_zwIframeObj.PdfUtils.getWebRoot()});
+	                                   if(officeTransIframeDom!=null){
+                                           var flag=useWeboffice&&prinOcx;
+                                           //解决webOffice重复加载问题
+                                           if(!flag) {
+                                               popupContentWin(true);
+                                               prePrintDialog.close();
+                                               return;
+                                           }
+	                                   }
+	                                   var v3xTmp = getA8Top().v3x || _zwIframeObj.v3x;
+	                                   var isOfdPrint=v3xTmp.needOpenPdfByOfd();
+	                                   if (!isOfdPrint) {
+                                           setTimeout(function(){
+                                               _zwIframeObj.PdfAPI.checkPDFOpenState(null, function () {
+                                                   if(useWeboffice){
+                                                       prinOcx=true;
+                                                   }
+                                                   _zwIframeObj.PdfAPI.pdfFullSize(false, function() {
+                                                       _zwIframeObj.PdfAPI.pdfPrint();
+                                                       prePrintDialog.close();
+                                                   });
+
+                                               })
+                                           },1000);
+
+	                                   }else{
+		                                   if(officeTransIframeDom==null){
+			                                   _zwIframeObj.OfdAPI.printOfd();
+		                                   }
+	                                   }
+                                   }
+                               } else {
+                                   //打开正文编辑页面是异步执行，无法确认加载完成的回调事件，添加定时器，延迟一定时间再执行
+                                   var interval = setInterval(function () {
+                                       _doPrint(preBodyFragArr,afterBodyFragArr,"mainpp",printFrom);
+                                       clearInterval(interval);
+                                   },500);
+                               }
+                           } else {
+                                var pl = _createPrintFragment(printFrom);
+                                _doPrint(pl.get(0),pl.get(1),"colPrint",printFrom);
+                           }
+					       prePrintDialog.close();
+					   }
+					}, {
+					    text: "取消",
+					    handler: function () {
+					        prePrintDialog.close();
+					    }
+					}]
+				});
+			}
+		}
+	}
+/**转换后打印，组装数据**/
+    function _printByOnLineTrans(printFrom){
+        var pl = _createPrintFragment(printFrom);
+        _doPrint(pl.get(0), pl.get(1), "onLineTrans", "onLineTrans");
+    }
+
+	/** 废弃 **/
+	function printCallWay(preBodyFragArr,afterBodyFragArr,printType,printFrom){
+		if(printFrom.indexOf("summary")!=-1){
+			if($.browser.mozilla){
+    			//fnx  =$(window.componentDiv)[0].document.getElementById("zwIframe").contentWindow;
+    			document.getElementById("zwIframe").contentWindow.$.content.print(preBodyFragArr,afterBodyFragArr,printType,printFrom);
+    		}else{
+    			//fnx =$(window.componentDiv)[0].document.zwIframe;
+    			document.zwIframe.$.content.print(preBodyFragArr,afterBodyFragArr,printType,printFrom);
+    		}
+		}else{
+			var fnx;
+	        if($.browser.mozilla){
+	            fnx = document.getElementById("zwIframe").contentWindow;
+	        }else{
+	            fnx = document.zwIframe;
+	        }
+	        fnx.$.content.print(preBodyFragArr,afterBodyFragArr,printType,printFrom);
+		}
+	}
+
+
+	/**
+	 * 开始打印
+	 */
+	function _doPrint(preBodyFragArr, afterBodyFragArr, printType, printFrom) {
+
+        // 获取表单打印内容
+        _getContentPrintFragment(printType, printFrom, function(contentFragment, cssList, iframeUrl, contentType, viewState, otherPrarams, formData) {
+
+            var printDefaultSelect = new Array();// 默认打印的部分的索引
+            var notPrintDefaultSelect = new Array(); // 默认不勾选的部分的索引列表
+            var printFragmentList = new ArrayList();
+
+            for (var i = 0; i < preBodyFragArr.size(); i++) {
+                if (preBodyFragArr.get(i) != "undefined" && preBodyFragArr.get(i) != undefined) {
+                    notPrintDefaultSelect.push(printFragmentList.size());
+                    printFragmentList.add(preBodyFragArr.get(i));
+                }
+            }
+
+            // 当是模版的时候，这里等于0是创建人。然后在是正文，最后是附件
+            if (printFrom == "template") {
+                for (i = 0; i < afterBodyFragArr.size(); i++) {
+                    if (afterBodyFragArr.get(i) != "undefined" && afterBodyFragArr.get(i) != undefined) {
+                        notPrintDefaultSelect.push(printFragmentList.size());
+                        printFragmentList.add(afterBodyFragArr.get(i));
+                    }
+                }
+            }
+
+            // 这里是正文
+            var selectCommentFragment = false;
+            if(contentFragment){
+                // office正文打印的时候没有正文页签
+	            printDefaultSelect.push(printFragmentList.size());
+	            printFragmentList.add(contentFragment);
+            }else{
+                selectCommentFragment = true;
+            }
+
+            if (printFrom != "template") {
+                for (i = 0; i < afterBodyFragArr.size(); i++) {
+                    if (afterBodyFragArr.get(i) != "undefined" && afterBodyFragArr.get(i) != undefined) {
+                        if(selectCommentFragment && afterBodyFragArr.get(i).isCommentFrame === true){
+                            printDefaultSelect.push(printFragmentList.size());
+                        }else{
+                            notPrintDefaultSelect.push(printFragmentList.size());
+                        }
+                        printFragmentList.add(afterBodyFragArr.get(i));
+                    }
+                }
+            }
+
+            // var styleDatas = new ArrayList();
+
+            if (printFrom.indexOf("summary_") != -1) {
+                var print_Form = new Array();
+                print_Form = printFrom.split("_"); // 字符分割
+                if (print_Form.length > 1) {
+                    printListLodop(printFragmentList, cssList, printDefaultSelect, notPrintDefaultSelect,
+                            contentType, viewState, otherPrarams, print_Form[1], formData);
+                } else {
+                    printList(printFragmentList, cssList, printDefaultSelect, notPrintDefaultSelect,
+                            contentType, viewState, otherPrarams, null, formData);
+                }
+            } else {
+                if (printFrom == 'summary' || (printFrom === "newCol" && window.cap4Flag === "true")) {
+                    printList(printFragmentList, cssList, printDefaultSelect, notPrintDefaultSelect, contentType,
+                            viewState, otherPrarams, iframeUrl, formData);
+                }else if(printFrom == 'onLineTrans'){
+                    
+                    var officeTransIframeDom=$("#zwIframe").get(0).contentWindow&&$("#zwIframe").get(0).contentWindow.document.getElementById("officeTransIframe");
+                    var htmlFrameIframeDom=officeTransIframeDom.contentWindow.document.getElementById("htmlFrame");
+                    if(htmlFrameIframeDom!=null){
+                        var htmlFrameIframeUrl=$(htmlFrameIframeDom).attr("src");
+                        if(printFragmentList.instance[2]!=null){
+                            printFragmentList.instance[2]["dataHtml"]=htmlFrameIframeUrl;
+                        }
+                        printList(printFragmentList, cssList, printDefaultSelect, notPrintDefaultSelect, contentType,
+                        viewState, otherPrarams, htmlFrameIframeUrl, formData);
+                    }
+                } else {
+                    printList(printFragmentList, cssList, printDefaultSelect, notPrintDefaultSelect, contentType,
+                            viewState, otherPrarams, null, formData);
+                }
+            }
+        });
+    }
+
+    /**
+     * 获取正文打印内容
+     */
+    function _getContentPrintFragment(printType, printFrom, callback) {
+
+        var winDocument, fnx;
+
+     //   winDocument = printFrom.indexOf("summary") != -1 ? componentDiv : window;
+        winDocument =  window;
+        if ($.browser.mozilla) {
+            fnx = winDocument.document.getElementById("zwIframe").contentWindow;
+        } else {
+            fnx = winDocument.document.zwIframe;
+        }
+
+        // fnx.$.content.print(preBodyFragArr, afterBodyFragArr, printType, printFrom);
+        fnx.contentAPI.getContentPrintHTML({
+            printType : printType,
+            printFrom : printFrom,
+            callback : function(datas) {
+
+                /* datas = {
+                      contentHTML : "",
+                      cssList : [],
+                      iframeURL : "",
+
+                      contentType : "20",
+                      viewState : "1",
+                      otherPrarams : null,
+                      formData : null
+                } */
+
+                var contentHTML, cssList, iframeURL, contentType, viewState, otherPrarams, formData;
+
+                iframeURL = datas.iframeURL;
+                contentHTML = datas.contentHTML;
+                cssList = datas.cssList;
+
+                contentType = datas.contentType;
+                viewState = datas.viewState;
+                otherPrarams = datas.otherPrarams;
+                formData = datas.formData;
+
+
+                // 打印回调
+                var printFragment = null;
+
+                if(contentHTML){
+
+                    printFragment = new PrintFragment($.i18n('common.toolbar.content.label'), contentHTML);
+	                if (iframeURL && (printFrom=='summary' || (printFrom === "newCol" && window.cap4Flag === "true"))) {
+	                    printFragment["dataContent"] = printFragment["dataHtml"];
+	                    printFragment["dataHtml"] = iframeURL;
+	                }
+                }
+
+                callback(printFragment, cssList, iframeURL, contentType, viewState, otherPrarams, formData);
+            }
+        });
+    }
+
+    /**
+     * 组装协同打印模块
+     */
+    function _createPrintFragment(printFrom) {
+
+        var printSubFrag;
+        var printSenderFrag;
+        var colAttachment1Frag;
+        var colAttachment2Frag;
+        var printForwardFragment;
+        var sendOpinionFrag;
+        var printCommentFragment;
+
+        // ==================  标题   ==================
+        try {
+            var printSubject = "标题"; //标题
+            var printsub = $("#subject").val();
+            printsub = "<center style='padding-top: 10px;'><span style='font-size:24px;line-height:24px;'>"
+                    + printsub.escapeHTML() + "</span></center>";
+
+            //标题文字样式与查时不一样.
+            printSubFrag = new PrintFragment(printSubject, printsub);
+        } catch (e) {
+        }
+
+        // ==================  发起者信息   ==================
+        try {
+            var printSenderInfo = "发起者信息"; //发起者信息
+            var printSender = "";
+            if (printFrom === "summary") {
+
+                printSender = $("#panleStart").html()
+                        + " (" + ' '
+                        + ') ';
+            } else if (printFrom === "newCol") {
+
+                printSender = '郭宏斌' + "(首席业务架构师首席业务架构师) ";
+            }
+            printSender += $("#createDate").val();
+            printSender = "<center><span style='font-size:12px;line-height:24px;'>" + printSender + "</span></center>";
+            printSenderFrag = new PrintFragment(printSenderInfo, printSender);
+        } catch (e) {
+        }
+
+        // ==================  附件   ==================
+        try {
+            var printAttachment = "附件"; //附件
+            var attNumber = "";
+            if (printFrom === "summary") {
+                attNumber = fileUploadAttachments.values().size();
+            } else {
+                attNumber = getFileAttachmentNumber(0, "Att");
+            }
+            var colAttachment = "";
+            if (attNumber != 0) {
+                colAttachment = "<table class='margin_t_20'><tr><td valign='top' nowrap='nowrap'><div class='div-float' style='color: #335186; font-weight: bolder; font-size: 12px;'>"
+                        + "附<span class=w1em></span><span class=w1em></span>件"
+                        + " : ("
+                        + attNumber
+                        + ")</div></td><td valign='top'>" + getFileAttachmentName(0) + "</td></tr></table>";
+                colAttachment = cleanSpecial(colAttachment);
+                colAttachment = tempMethod(colAttachment);
+            }
+            colAttachment1Frag = new PrintFragment(printAttachment, colAttachment);
+        } catch (e) {
+        }
+
+        // ==================  关联文档   ==================
+        try {
+            var printColMydocument = "关联文档"; //关联文档
+            var att2Number = getFileAttachmentNumber(2, 'Doc1');
+            var colMydocument = "";
+            if (att2Number != 0) {
+                colMydocument = "<table class='margin_t_20'><tr><td valign='top' nowrap='nowrap'><div class='div-float' style='color: #335186; font-weight: bolder; font-size: 12px;'>"
+                        + printColMydocument
+                        + " : ("
+                        + att2Number
+                        + ")</div></td><td valign='top'>"
+                        + getFileAttachmentName(2) + "</td></tr></table><br>";
+                colMydocument = cleanSpecial(colMydocument);
+                colMydocument = tempMethod(colMydocument);
+            }
+            colAttachment2Frag = new PrintFragment(printColMydocument, colMydocument);
+        } catch (e) {
+        }
+
+        // 意见等信息是下一层级的信息
+        var componentPageWin = window;
+
+
+        //  ==================  原意见（转发）   ==================
+        if (printFrom.indexOf("summary") != -1) {
+
+            var forwards = componentPageWin.$("#commentForwardDiv");
+            var forwardsNum = forwards.length;
+            if (typeof (forwardsNum) !== "undefined" && forwardsNum > 0) {
+                var printForward = "";
+                for (var i = 0; i < forwardsNum; i++) {
+                    printForward += _cleanA("</br>" + forwards[i].outerHTML);
+                }
+
+                //OA-131813 没办法的办法了
+                printForward = printForward.replace(/ id="?comment_forward_region" ? /g,
+                        " id='comment_forward_region' style='margin: 0px;' ");
+
+                printForwardFragment = new PrintFragment($.i18n('collaboration.colPrint.oldOpinion'), printForward);
+            }
+        }
+
+        //  ==================  附言   ==================
+        var sendOpinionContent = "";
+        if (printFrom.indexOf("summary") != -1) {
+
+            componentPageWin.$("#replyContent_sender #replyContent_sender_content #reply_sender")
+                    .css('display', 'none');
+            sendOpinionContent = componentPageWin.$("#replyContent_sender #replyContent_sender_content").html();
+
+        } else {
+            // 新建页面附言组装
+            try {
+                var content = $("#fuyan #content_coll").val();
+                var defaultValue = $.i18n("collaboration.newcoll.fywbzyl");
+                if (content == defaultValue) {
+                    content = "";
+                } else if ($("#fuyan #content_coll").val() != "") {
+                    content = $("#fuyan #content_coll").val().escapeHTML();
+                }
+
+                sendOpinionContent = content;
+
+            } catch (e) {
+            }
+        }
+        //判断附言内容存在才在打印页面展示附言
+        if (sendOpinionContent)
+        {
+            var printColOpinion = "发起人附言";
+            var colOpinion = "<br/><div class='div-float body-detail-su' style='font-size: 12px; font-weight: bolder;'>"
+                + printColOpinion + "</div><br />";
+            colOpinion += _cleanA("<div style='line-height: 20px; margin-bottom: 5px;font-size: 12px;'>"
+                + sendOpinionContent + "</div></br>");
+
+            sendOpinionFrag = new PrintFragment(printColOpinion, colOpinion);
+        }
+
+        //  ==================  处理人意见区   ==================
+        if (printFrom.indexOf("summary") != -1) {
+
+            if (printFrom !== "template") {
+
+                var printComment;
+                var commentHTML = componentPageWin.$("#currentComment").html();
+
+                if (typeof (commentHTML) == 'undefined') {
+                    printComment = "";
+                } else {
+                    printComment = _cleanA(commentHTML);
+                }
+
+                printComment = printComment.replace(/no_like_16/g, "no_like_disable_16");
+                //将printComment中 span 标签的title=“取消赞、赞”变为 title=''
+                //printComment = printComment.replace(new RegExp("title=[^>]*?(?=onclick)","g"),"title='' ");
+                //OA-91675 处理待办协同页面点击打印，打印页面中，意见回复区人员后面赞的手势图标未显示
+                printComment = printComment.replace(new RegExp("title=[^>]*?(?= )", "g"), "title='' ");
+
+                // 去掉回复按钮
+                printComment = printComment.replace(/<a[^>]*?commentShowReplyComment\([^>]*?>[^<]*?<\/a>/g, "");
+                //去掉隐藏意见复选框
+                printComment = printComment.replace(/<input.*?hideEmptyComment.*?>/g, "");
+                printComment = printComment.replace(/<span[^>]*?hideEmptyText[^>]*?>[^<]*?<\/span>/g, "");
+                //隐藏搜索图标
+                printComment = printComment.replace(/<span[^>]*?syIconPosition syIcon sy-search margin_lr_5[^>]*?>[^<]*?<\/span>/g, "");
+                //将日志图标隐藏
+                printComment = printComment.replace(/log_span/g, "log_span display_none");
+                printCommentFragment = new PrintFragment($.i18n('collaboration.colPrint.handleOpinion'), printComment);
+
+                // 这里特殊处理， _doPrint方法里面会调用
+                printCommentFragment.isCommentFrame = true;
+            }
+        }
+
+        var printSubFrag;
+        var printSenderFrag;
+        var colAttachment1Frag;
+        var colAttachment2Frag;
+        var printForwardFragment;
+        var sendOpinionFrag;
+        var printCommentFragment;
+
+        var beforeContent = new ArrayList();
+        var afterContent = new ArrayList();
+
+        // 正文前打印的内容
+        printSubFrag && beforeContent.add(printSubFrag);
+        printSenderFrag && beforeContent.add(printSenderFrag);
+
+        // 正文后打印的内容
+        colAttachment1Frag && afterContent.add(colAttachment1Frag);
+        colAttachment2Frag && afterContent.add(colAttachment2Frag);
+        printForwardFragment && afterContent.add(printForwardFragment);
+        sendOpinionFrag && afterContent.add(sendOpinionFrag);
+        printCommentFragment && afterContent.add(printCommentFragment);
+
+        var allContent = new ArrayList();
+        allContent.add(beforeContent);
+        allContent.add(afterContent);
+
+        return allContent;
+    }
+
+
+
+    //新建事项中打印
+    var printSubFrag = "";
+
+    /** 解耦，不再使用这个方法了 ，参见 _createPrintFragment **/
+    function newColPrint(printFrom) {
+        //标题
+        try {
+            var printSubject = "标题"; //标题
+            var printsub = $("#subject").val();
+            printsub = "<center style='margin-top: 10px;'><span style='font-size:24px;line-height:24px;'>"
+                    + printsub.escapeHTML() + "</span></center>";
+            //标题文字样式与查时不一样.
+            printSubFrag = new PrintFragment(printSubject, printsub);
+        } catch (e) {
+        }
+        //发起者信息
+        var printSenderFrag = "";
+        try {
+            var printSenderInfo = "发起者信息"; //发起者信息
+            var printSender = "";
+            if (printFrom === "summary") {
+                printSender = $("#panleStart").html()
+                        + " (" + ' '
+                        + ') ';
+            } else if (printFrom === "newCol") {
+                printSender = '郭宏斌' + "(首席业务架构师首席业务架构师) ";
+            }
+            printSender += $("#createDate").val();
+            printSender = "<center><span style='font-size:12px;line-height:24px;'>" + printSender + "</span></center>";
+            printSenderFrag = new PrintFragment(printSenderInfo, printSender);
+        } catch (e) {
+        }
+        var colAttachment1Frag = "";
+        try {
+            var printAttachment = "附件"; //附件
+            var attNumber = "";
+            if (printFrom === "summary") {
+                attNumber = getFileAttachmentNumber(0, "showAttFile");
+            } else {
+                attNumber = getFileAttachmentNumber(0, "Att");
+            }
+            var colAttachment = "";
+            if (attNumber != 0) {
+                colAttachment = "<table class='margin_t_20'><tr><td valign='top' nowrap='nowrap'><div class='div-float' style='color: #335186; font-weight: bolder; font-size: 12px;'>"
+                        + "附<span class=w1em></span><span class=w1em></span>件"
+                        + " : ("
+                        + attNumber
+                        + ")</div></td><td valign='top'>" + getFileAttachmentName(0) + "</td></tr></table>";
+                colAttachment = cleanSpecial(colAttachment);
+                colAttachment = tempMethod(colAttachment);
+            }
+            colAttachment1Frag = new PrintFragment(printAttachment, colAttachment);
+        } catch (e) {
+        }
+
+        //关联文件和附件
+        var colAttachment2Frag = "";
+        try {
+            var printColMydocument = "关联文档"; //关联文档
+            var att2Number = getFileAttachmentNumber(2, 'Doc1');
+            var colMydocument = "";
+            if (att2Number != 0) {
+                colMydocument = "<table class='margin_t_20'><tr><td valign='top' nowrap='nowrap'><div class='div-float' style='color: #335186; font-weight: bolder; font-size: 12px;'>"
+                        + printColMydocument
+                        + " : ("
+                        + att2Number
+                        + ")</div></td><td valign='top'>"
+                        + getFileAttachmentName(2) + "</td></tr></table><br>";
+                colMydocument = cleanSpecial(colMydocument);
+                colMydocument = tempMethod(colMydocument);
+            }
+            colAttachment2Frag = new PrintFragment(printColMydocument, colMydocument);
+        } catch (e) {
+        }
+
+        //附言
+        var sendOpinionFrag = '';
+        if (printFrom !== "summary") {//在查看协同详细页面 意见中已经包含附言
+            try {
+                var content = $("#fuyan #content_coll").val();
+                var defaultValue = $.i18n("collaboration.newcoll.fywbzyl");
+                if (content == defaultValue) {
+                    content = "";
+                } else if ($("#fuyan #content_coll").val() != "") {
+                    content = $("#fuyan #content_coll").val().escapeHTML();
+                }
+                var printColOpinion = "发起人附言"; //附言
+                var colOpinion = "<br/><div class='div-float body-detail-su' style='font-size: 12px; font-weight: bolder;'>"
+                        + printColOpinion
+                        + " :</div></br>"
+                        + "<div style='line-height: 20px; margin-bottom: 5px;'>"
+                        + content + "</div></br>";
+                colOpinion = cleanSpecial(colOpinion);
+                sendOpinionFrag = new PrintFragment(printColOpinion, colOpinion);
+            } catch (e) {
+            }
+        }
+        var pl1 = new ArrayList();
+        var pl2 = new ArrayList();
+        pl1.add(printSubFrag);
+        pl1.add(printSenderFrag);
+        pl2.add(colAttachment1Frag);
+        pl2.add(colAttachment2Frag);
+        if (printFrom !== "summary") {
+            pl2.add(sendOpinionFrag);
+        }
+
+        var pl = new ArrayList();
+        pl.add(pl1);
+        pl.add(pl2);
+        return pl;
+    }
+
+    //新建事项中表单打印
+    /** 解耦，不再使用这个方法了 ，参见 _createPrintFragment **/
+    function newFormMainPrint(printFrom) {
+        try {
+            //var printSubject = _("common.subject.label");
+            //var printsub = document.getElementById("subject").value;
+            var printSubject = "标题"; //标题
+            var printsub = $("#subject").val();
+            printsub = "<center style='margin-top: 10px;'><span style='font-size:24px;line-height:24px;'>"
+                    + printsub.escapeHTML() + "</span></center>";
+            //标题文字样式与查时不一样.
+            var printSubFrag = new PrintFragment(printSubject, printsub);
+        } catch (e) {
+        }
+        try {
+            var printSenderInfo = "发起者信息"; //发起者信息
+            var printSender = "";
+            if (printFrom === "summary") {
+                printSender = $("#panleStart").html()
+                        + " (" + ' '
+                        + ') ';
+            } else if (printFrom === "newCol") {
+                printSender = '郭宏斌' + "(首席业务架构师首席业务架构师) ";
+            }
+            printSender += $("#createDate").val();
+            printSender = "<center><span style='font-size:12px;line-height:24px;'>" + printSender + "</span></center>";
+            var printSenderFrag = new PrintFragment(printSenderInfo, printSender);
+        } catch (e) {
+        }
+        try {
+            //var printColOpinion = _("common.postscript.label");
+            var printColOpinion = "发起人附言"; //附言
+            //发起人附言
+            var content = $("#fuyan #content_coll").val();
+            var defaultValue = $.i18n("collaboration.newcoll.fywbzyl");
+            if (content == defaultValue) {
+                content = "";
+            } else if ($("#fuyan #content_coll").val() != "") {
+                content = $("#fuyan #content_coll").val().escapeHTML();
+            }
+            var colOpinion = "<br/><div class='div-float body-detail-su' style='font-size: 12px; font-weight: bolder;'>"
+                    + printColOpinion
+                    + " :</div><br />"
+                    + "<div style='line-height: 20px; margin-bottom: 5px;'>"
+                    + content + "</div></br>";
+            colOpinion = cleanSpecial(colOpinion);
+            var sendOpinionFrag = new PrintFragment(printColOpinion, colOpinion);
+        } catch (e) {
+        }
+
+        try {
+            //var printAttachment = _("common.attachment.label");
+            var printAttachment = "附件"; //附件
+            if (printFrom === "summary") {
+                attNumber = getFileAttachmentNumber(0, "showAttFile");
+            } else {
+                attNumber = getFileAttachmentNumber(0, "Att");
+            }
+            var colAttachment = "";
+            if (attNumber != 0) {
+                colAttachment = "<table class='margin_t_20'><tr><td valign='top' nowrap='nowrap'><div class='div-float' style='color: #335186; font-weight: bolder; font-size: 12px;'>"
+                        + "附<span class=w1em></span><span class=w1em></span>件"
+                        + " : ("
+                        + attNumber
+                        + ")</div></td><td valign='top'>" + getFileAttachmentName(0) + "</td></tr></table>";
+                colAttachment = cleanSpecial(colAttachment);
+                colAttachment = tempMethod(colAttachment);
+            }
+
+            var colAttachment1Frag = new PrintFragment(printAttachment, colAttachment);
+        } catch (e) {
+        }
+        try {
+            var printColMydocument = "关联文档"; //关联文档
+            var att2Number = getFileAttachmentNumber(2, 'Doc1');
+            var colMydocument = "";
+            if (att2Number != 0) {
+                colMydocument = "<table class='margin_t_20'><tr><td valign='top' nowrap='nowrap'><div class='div-float' style='color: #335186; font-weight: bolder; font-size: 12px;'>"
+                        + printColMydocument
+                        + " : ("
+                        + att2Number
+                        + ")</div></td><td valign='top'>"
+                        + getFileAttachmentName(2) + "</td></tr></table><br>";
+                colMydocument = cleanSpecial(colMydocument);
+                colMydocument = tempMethod(colMydocument);
+            }
+            var colAttachment2Frag = new PrintFragment(printColMydocument, colMydocument);
+        } catch (e) {
+        }
+
+        var pl1 = new ArrayList();
+        var pl2 = new ArrayList();
+        pl1.add(printSubFrag);
+        pl1.add(printSenderFrag);
+        pl2.add(colAttachment1Frag);
+        pl2.add(colAttachment2Frag);
+        pl2.add(sendOpinionFrag);
+
+        var pl = new ArrayList();
+        pl.add(pl1);
+        pl.add(pl2);
+        return pl;
+    }
+    //临时方法为了解决在新建协同，内容为表单类型时，插入关联文档，打印页面关联文档图标不显示问题
+    //其实是getFileAttachmentName(2)中工程路径没获取到
+    var path = "src=\'/seeyon/common/images";
+    function tempMethod(colMydocument) {
+        if (colMydocument.indexOf("src=\'/common/images") >= 0) {
+            colMydocument = colMydocument.replace("src=\'/common/images", path);
+            colMydocument = tempMethod(colMydocument);
+        }
+        return colMydocument;
+    }
+</script><script type="text/javascript">
+
+    function validataDeeFormDev(affairid, attitude,failedCallBack){
+		var flag = true;
+		if(attitude == "start"){
+			try{
+				flag = callBackendMethod("formBindExtendClassEventListener","validataDeeFormDev",affairid, attitude);
+			}catch(e){}
+			if(!flag){
+				var dialog2 = $.messageBox({
+					'title': '失败信息',
+					'type': 100,
+					'msg': '开发高级dee任务与内存不一致,请联系管理员检查表单配置！',
+					'imgType': 1,
+					buttons: [{
+						id:'exit1',
+						text: "关闭",
+						handler: function () { 
+							if (failedCallBack && failedCallBack != "undefined") {
+                                failedCallBack();
+                            }
+                            dialog2.close();
+						}
+					}],
+					close_fn: function () { 
+						if (failedCallBack && failedCallBack != "undefined") {
+                            failedCallBack();
+                        }
+                        dialog2.close();
+					}
+				});
+			}
+		}
+		return flag;
+	}
+
+    function beforeSubmit(affairid, attitude, content, object, sucessCallback, failedCallBack,isExecute) {
+    	//isExecute 用来判断是否需要执行dee任务，如果多人执行，不是最后一个节点，或者竞争执行不是第一个处理，那就不执行
+		if(validataDeeFormDev(affairid, attitude,failedCallBack)){
+			//var taskType = r.achieveTaskType(affairid, attitude, content);
+			//var taskType = callBackendMethod("collaborationFormBindEventListener","achieveTaskType",affairid, attitude, content);
+			var taskType = callBackendMethod("formBindExtendClassEventListener","achieveTaskType",affairid, attitude, content,isExecute);
+			if (taskType) {
+				var ds1;
+				if ("ext" == taskType) {	//开发高级-扩展类
+					//ds1 = r.preHandler(affairid, attitude, content);
+					//ds1 = callBackendMethod("collaborationFormBindEventListener","preHandler",affairid, attitude, content);
+					ds1 = callBackendMethod("formBindExtendClassEventListener","preHandler",affairid, attitude, content);
+					
+					if (ds1 && typeof (ds1) == "object") {
+						if (ds1[0] == '1') {	//数组下标[0]值为1代表扩展类，数组下标[0]值2代表DEE，有返回代表审核失败，返回null代表正常
+							if (object != null) {
+								object.close();
+							}
+							var extContent=ds1[1].replace(/[\r\n]/g, "");	//扩展类返回值
+							var dialog = $.dialog({
+								url: "/seeyon/genericController.do?ViewPage=ctp/form/design/eventTip&content="
+										+ encodeURIComponent(extContent),
+								title: "审核结果",
+								width: 300,
+								height: 300,
+								closeParam: {show: false},
+								buttons: [
+									{
+										text: "转审核意见",
+										id: "sure1",
+										handler: function () {
+											if (content != "") {
+												content = content + "\r\n" + "-----------------------------" + "\r\n";
+											}
+
+											try{
+												setContentDealComment(content + extContent);
+											} catch (e) {
+												
+											}
+											failedCallBack();
+											dialog.close();
+										}
+									},
+									{
+										text: "取消",
+										id: "exit1",
+										handler: function () {
+											failedCallBack();
+											dialog.close();
+										}
+									}
+								]
+							});
+						}
+					}else{
+					  sucessCallback();
+					}
+				} else if ("dee" == taskType) {
+					if(!$.ctx.hasPlugin("dee")){
+						$.alert($.i18n('dee.form.hasplugin.off'));
+						failedCallBack();
+						return;
+					}
+					executeDeeTask(null, affairid, attitude, content, null, "false", sucessCallback, failedCallBack);
+				} else {
+					sucessCallback();
+				}
+			} else {
+				sucessCallback();
+			}
+		}
+    }
+
+    function executeDeeTask(r, affairid, attitude, content, currentEventId, skipConcurrent, sucessCallback, failedCallBack) {
+        //var ds1 = r.preDeeHandler(affairid, attitude, content, currentEventId, skipConcurrent);
+        var ds1 = callBackendMethod("collaborationFormBindEventListener","preDeeHandler",affairid, attitude, content, currentEventId, skipConcurrent);
+        if (ds1) {
+            var blockFormWriteBackJson = ds1["blockFormWriteBackJson"];
+            if (blockFormWriteBackJson) {
+                var objs = blockFormWriteBackJson;
+                // 兼容google浏览器需要下面这一句替换掉google浏览器添加的pre
+                objs = objs.replace("<pre style=\"word-wrap: break-word; white-space: pre-wrap;\">", "").replace("</pre>", "").replace("<pre>", "");
+                var _objs = $.parseJSON(objs);
+                if (_objs.success == "true" || _objs.success == true) {
+                    // 如果当前权限因为高级权限改变，则将改变后的权限id记录在页面中
+                    if (_objs.viewRight != undefined && $("#rightId").val() != _objs.viewRight) {
+                        $("#rightId").val(_objs.viewRight);
+                        $("#img").removeClass("hidden").addClass("hidden");
+                    }
+                    _objs = _objs.results;
+                    if(typeof formCalcResultsBackFill!="undefined"){
+                        formCalcResultsBackFill(_objs);
+                    }else if(document.getElementById("zwIframe")!=null){
+                        document.getElementById("zwIframe").contentWindow.formCalcResultsBackFill(_objs);
+                    }else{
+                    	document.zwIframe.formCalcResultsBackFill(_objs);
+                    }
+              //      formCalcResultsBackFill(_objs);
+                } else {
+                    $.alert(_objs.errorMsg);
+                }
+            }
+
+            var hasNext = ds1["hasNext"];
+            var retSkipConcurrent = ds1["skipConcurrent"];
+            var retCurrentEventId = ds1["currentEventId"];
+            var blockInfoMsgType = ds1["blockInfoMsgType"];
+            var blockInfoReason = ds1["blockInfoReason"];
+            var exception = ds1["exception"];
+            if (exception) {
+                var dialog2 = $.messageBox({
+					'title': '失败信息',
+					'type': 100,
+					'msg': exception,
+					'imgType': 1,
+					buttons: [{
+						id:'exit1',
+						text: "关闭",
+						handler: function () { 
+							if (failedCallBack && failedCallBack != "undefined") {
+                                failedCallBack();
+                            }
+                            dialog2.close();
+						}
+					}],
+					close_fn: function () { 
+						if (failedCallBack && failedCallBack != "undefined") {
+                            failedCallBack();
+                        }
+                        dialog2.close();
+					}
+				});
+            } else if (blockInfoMsgType == "error") {
+                var dialog1 = $.messageBox({
+					'title': '失败信息',
+					'type': 100,
+					'msg': blockInfoReason,
+					'imgType': 1,
+					buttons: [{
+						id:'exit1',
+						text: "关闭",
+						handler: function () { 
+							if (failedCallBack && failedCallBack != "undefined") {
+                                failedCallBack();
+                            }
+                            dialog1.close();
+						}
+					}],
+					close_fn: function () { 
+						if (failedCallBack && failedCallBack != "undefined") {
+                            failedCallBack();
+                        }
+                        dialog1.close();
+					}
+				});
+            } else if (blockInfoMsgType == "info") {
+                var dialog = $.messageBox({
+					'title': '提示信息',
+					'type': 100,
+					'msg': blockInfoReason,
+					'imgType': 0,
+					buttons: [{
+						id:'exit1',
+						text: "确定",
+						handler: function () { 
+							 if (hasNext == "true") {
+                                 executeDeeTask(null, affairid, attitude, content, retCurrentEventId, retSkipConcurrent, sucessCallback, failedCallBack);
+                             } else {
+                                 sucessCallback();
+                             }
+                             dialog.close(dialog.index);
+						}
+					}],
+					close_fn: function () { 
+						if (hasNext == "true") {
+                            executeDeeTask(null, affairid, attitude, content, retCurrentEventId, retSkipConcurrent, sucessCallback, failedCallBack);
+                        } else {
+                            sucessCallback();
+                        }
+                        dialog.close(dialog.index);
+					}
+				});
+            } else {
+                if (hasNext == "true") {
+                    executeDeeTask(null, affairid, attitude, content, retCurrentEventId, retSkipConcurrent, sucessCallback, failedCallBack);
+                } else {
+                    sucessCallback();
+                }
+            }
+        }
+    }
+</script><!-- 当前的模板Id,个人模板的话是自己的Id,不是其父模板的Id -->
+
+	<script type="text/javascript" charset="UTF-8" src="/seeyon/common/js/polyfill.min.js?V=V8_2SP1_231013_1903070"></script>
+	<script type="text/javascript" charset="UTF-8" src="/seeyon/common/cap-dynamic-front/load.js?V=V8_2SP1_231013_1903070"></script><script src="https://oa.topprismdata.com/seeyon/common/cap-dynamic-front/js/collaboration/invoiceOcr.js?V=V8_2SP1_231013_1903070"></script>
+	<script type="text/javascript" charset="UTF-8" src="/seeyon/apps_res/collaboration/js/newCollaboration-all-min.js?V=V8_2SP1_231013_1903070"></script>
+	<!-- 页面设计器单独引用的js -->
+	<!-- 流程预测等相关切换耦合在dataRelation.js里面，高级工作流只管控相关数据，先放开，后面预测等操作应该和相关数据解耦 -->
+        <link rel="stylesheet" href="/seeyon/apps_res/collaboration/css/dataRelation.css?V=V8_2SP1_231013_1903070">
+        <script type="text/javascript" charset="UTF-8" src="/seeyon/apps_res/collaboration/js/dataRelation.js?V=V8_2SP1_231013_1903070"></script>
+    	<script type="text/javascript" charset="UTF-8" src="/seeyon/common/js/echarts-all.js?V=V8_2SP1_231013_1903070"></script>
+ 		<script type="text/javascript" charset="UTF-8" src="/seeyon/common/report/chart/js/seeyon.ui.reportEcharts.js?V=V8_2SP1_231013_1903070"></script>
+	    <script type="text/javascript" charset="UTF-8" src="/seeyon/common/report/chart/js/report-result-chart.js?V=V8_2SP1_231013_1903070"></script>
+    <script type="text/javascript">
+			var remind_workflow_start_department_id= "1";
+			var workflow_start_department_id= "82167773011657026";
+			var workflow_start_department_name= "首席业务架构师";
+		    var isNewCollFlag = 'false';
+		    // 是否是编辑待发
+		    var isEditFromWaitSend = false;
+			var advancedButs ='[]';
+			var processTermTypeVal="";
+			var appName= "collaboration";
+			var createProcessXmlNPS= "default";
+			var defaultPolicyId= "collaboration";
+			var defaultPolicyName= $.i18n('common.collaboration.label');
+            var nodeattitudeListSize = "";
+			var zwIframeUrl = "";
+			var isCap4Forward = "";
+			var pTemp = {"nodePolicy":'\u007b\u0022reMove\u0022:false,\u0022uploadAttachment\u0022:true,\u0022uploadRelDoc\u0022:true,\u0022repeatSend\u0022:true,\u0022relateAttachment\u0022:false,\u0022editWorkFlow\u0022:true,\u0022forward\u0022:true,\u0022pigeonhole\u0022:true,\u0022cancel\u0022:true,\u0022print\u0022:true\u007d',"jval":"\u007b\u0022hasDocPlugin\u0022:true,\u0022hasProjectPlugin\u0022:false,\u0022hasBarCodePlug\u0022:false\u007d"};
+			var isV5Member = true;
+			var hasDoc = "true";
+			var DR = "";
+			var templateProcessId = "-2314159372060900745";
+			var summaryId = "7689747273941732006";
+			var _summaryId = "7689747273941732006";
+			var tps = '';
+			var senderId = "";
+			var nodePolicy = "newCol";
+			//取新建节点权限
+			var nodePolicy = $.parseJSON(pTemp.nodePolicy);
+			var officecanPrint = nodePolicy.print.toString();
+			var summarySate ="-1";
+			var affairState = "-1";
+				if(summarySate != "-1"){
+                    affairState = summarySate;
+				}
+
+	   		// 正文组件判断，新建页面
+  			var bIsContentNewPage = true;
+	   		var openFrom = "newColl";//数据关联使用
+			var bIsClearContentPadding = false;
+			var hasColSubject = true;//判断是否有标题规则
+			var checkPDFIsNull=false; //保存个人模板的标记，个人协同模板允PDF正文许为空
+			//服务器时间和本地时间的差异
+			var server2LocalTime = 1753683553237 - new Date().getTime();
+			var isForm ='false';
+			var isFromTemplate = 'false';
+			var isSystemTemplete = 'true';
+			//移动newCollaboration.js.jsp 变量开始
+			var zdgzid ="";
+			var htdbry ="";
+			var officeOcxUploadMaxSize = "51200";
+			var bodyType = '20';
+			var paramfrom = "templateNewColl";
+			var reqFrom = "";
+            var from = "";
+			var wfXmlInfo = '';
+            var _callTemplateId = '-6258732481612331848';
+            var templateId = '-6258732481612331848';
+            //系统模板ID,如果本身是系统模板取自己的ID，如果是个人模板存为的系统模板，取父模板ID
+            var systemTemplateId = '-6258732481612331848';
+			var canCopy = 'false';
+			var _summaryActivityId = "start";
+			var affairId = "-1";
+			var isformTemplate = 'true';
+			var uuidlong = '6352674629169989800';
+			var ishideconotentType = ('true' == 'true' && ('template' != 'workflow')) || ('' =='1');
+			var istranstocol = '' =='true';
+			var transOfficeId ='' != '';
+			var isneedsendcheck = '0' != '2' && '' != '16';
+			var _subState = '';
+			var isSysTem = true;
+			var isTemFlag = 'true';
+			var importantL = '1';
+			var deadl = '';
+			var formAppid = '1080815720585252099';
+			var advanceR = '0';
+			var vobjtrackids = "";
+
+			var vobjcolsupnames = '';
+			var vobjcolSupors = '';
+			var vobjcolsupDate = '';
+			var forwardMember = '';
+			var replyCounts = '';
+			
+			//是否为督办业务
+			var isSupervision = "";
+
+			var sumcanforward = "true";
+			var sumcanmodify = "true";
+			var sumcanEdit = "false";
+			var sumcanEditAtt = "true";
+			var sumcanAddComment = "true";
+			var sumcanArchive = "true";
+			//var sumcanautostop = "false" && "false" =="0";
+			var vobjreadonly = 'false' == 'true';
+            var isneedsetDetailwhenwftem =  '-6258732481612331848' && 'template' =='workflow' && 'true'=='true';
+			var vobjparentColTem = 'true'=='true';
+			var vobjparenttexttype = 'template' =='text';
+			var waitsendflag = "templateNewColl" != 'waitSend';
+            var waitsendflagnew = "templateNewColl" == 'waitSend' && _subState !='1';
+            var vobjparentwftem = 'false' =='true';
+			var frompeoplecardflag = false;
+			var peoplecardinfoID = '';
+			var peoplecardinfoname = '';
+			var peoplecardinfoaccountid = '';
+			var issameaccountflag = false;
+			var accountobjsn = '';
+			var warnforsupervise = '' == 'true' && true;
+			var tracktypeeq2 = false;
+			var formRecordid  = "" ;
+			var fgzids = '';
+			var tracktypeeq0 = false;
+			var savedrafttemVal = '' != '16';
+			var issystemtemflag = 'true' == 'true';
+			var curlocationPath = '/seeyon';
+			var useforsavetemsubject = "LJCW04-差旅费报销单";
+			var saveastemtype ='template';
+			var pipeinfo1 = v3x.getMessage("collaborationLang.collaboration_alertPigeonholeItemFailure");
+			var pipeinfo2 = v3x.getMessage("prep-pigeonhole.label");
+			var pipeinfo3 = v3x.getMessage("common.button.ok.label");
+			var pipeinfo4 = v3x.getMessage("collaborationLang.collaboration_alertPigeonholeItemFailure");
+			var pipeinfo5 = v3x.getMessage("common.button.cancel.label");
+			var contentViewState = '1';
+			var ordinalTemplateIsSys ='';
+			var superviseTip = "督办主题包含特殊字符(|\"<>)请重新录入\!";
+			var _expansion ="展开";
+			var _collapse ="收起";
+			var customSetTrackFlag = 'true' == 'true';
+			var _bizConfig = "false" == "true";
+			var projectId ="";
+			var _isProjectDisabled = false;
+			if(!true){//非A8人员
+			    _isProjectDisabled = true;
+			}
+			var _isResendFlag = false;
+			var newColl = true;
+			var affairMemberId = '2473251027571984562';
+			var affairMemberName = '郭宏斌';
+			var _affairMemberId = affairMemberId;
+			//移动newCollaboration.js.jsp 变量结束
+			//工作流相关的信息  摘自 include_variables.jsp 开始
+			var mtCfg = [{"name":"标准正文","mainbodyType":10},{"name":"Word正文","mainbodyType":41},{"name":"Excel正文","mainbodyType":42},{"name":"Wps文字","mainbodyType":43},{"name":"Wps表格","mainbodyType":44},{"name":"Pdf 正文","mainbodyType":45}];
+			var useWorkflow = "true";
+			var cap4Flag = "true";
+			var _RemindInterval =""
+			var loginAccount = '670869647114347';
+			//待发增加表单锁相关参数 start
+			var isHasFormEditPage = "";
+		    var alertLockMsg = "";
+		    var hasFormLock = "";
+		    var fromRecordId = "";
+		    var _summaryProcessId = '';
+		    var summaryOrgAccountId = '';
+		    var affairFirstViewTime = '';
+		    var affairSignleViewPeriod = '';
+			var secretLevelAble = "false";//是否开启密级
+		    //待发增加表单锁相关参数 end
+			
+				var wfItemId = '-1';
+				var wfProcessId = '';
+				var wfProcessTemplateId = '-2314159372060900745';
+				var wfActivityId = '-1';
+				var CurrentUserId = '2473251027571984562';
+				var wfCaseId = '-1';
+				var moduleTypeName = 'collaboration';
+			
+			//工作流相关的信息  摘自 include_variables.jsp 结束
+			//***************
+			//lilong 快速选人变量 0326
+			window.distroy_token = false;
+			
+			    //正常但是有模板，需要屏蔽token
+			    window.distroy_token = true;
+			    
+			if((paramfrom && paramfrom == 'resend')  //重复发起 OA-55334
+					|| (isTemFlag && isTemFlag == 'true') //个人模板 OA-55428
+					|| (paramfrom && paramfrom == 'waitSend')){  //OA-55492 撤销或者保存待发过来的屏蔽
+
+				window.distroy_token = true;
+
+			}
+			if(frompeoplecardflag){
+				window.distroy_token = true;
+			}
+			
+			if(paramfrom == 'a8genius' ||  //致信
+				paramfrom == 'dingding' || //钉钉
+				paramfrom == 'qywechat' || //企业微信
+				paramfrom == 'feishu'){    //飞书
+
+				window.distroy_token = peoplecardinfoID != '';
+			}
+			
+
+			$("#process_info_div").click(function(){
+				$("#token-input-process_info").css("color","#111");
+			});
+			$("#token-input-process_info").live("keydown", function(){
+				$("#token-input-process_info").css("color","#111");
+			});
+
+			var defaultNodeName = "collaboration";
+			var defaultNodeLable = "协同";
+			var isHistoryFlag = "false";
+			var canDeleteNode = "true";
+			// 合并处理相关配置
+			var mergeIgnoreCommentRequired = ""; // 忽略意见必填
+			var mergeAttitude = "2";  // 合并态度
+			var mergeContent = "1";    // 合并意见
+			//**************
+
+			var canTrackWorkFlowValue = 0;
+			
+				canTrackWorkFlowValue = 0;
+			
+
+			var cashId = '';
+			// 判断【存为模板】按钮是否已被点击
+			var saveBtnIsLock = false;
+			//文件密级值
+			var chooseSecretLevel = "";
+			
+			var writeLock='' == 'true';
+			var writeLockMsg= "";
+	</script>
+
+	<!-- plugin resources begin, load from merge-PluginResourceLoad.jsp -->
+<!-- plugin resources end --><link type="text/css" rel="stylesheet" href="/seeyon/common/isignaturehtml/languages/style/language_zh.css"></head>
+<body class="h100b page_color" onunload="removeSessionMasterData('');pageUnload();">
+<script>
+	window.scanCodeInputValue = '0';
+</script>
+<form method="post" id="sendForm" name="sendForm" action="/seeyon/collaboration/collaboration.do?method=send&amp;from=templateNewColl&amp;reqFrom=" class="h100b">
+    <div class="newColl_layout wideRightWidth narrowLayoutRight" id="newColl_layout">
+    	<!-- 左侧 -->
+    	<div class="newColl_layout_left">
+	        <div class="toolbarArea" style="white-space:nowrap;background-color:#f7f7f7">
+	            <div class="padding_l_5 left">
+				    <div id="toolbar" style="padding-left:12px;"><div class="common_toolbar_box clearfix" style="_display:inline; border-top-width:0px;border-bottom-width:0px;border-left-width:0px;border-right-width:0px;border-color:#b6b6b6;border-style:solid;"><div id="toolbar_41485644" class="toolbar_l clearfix"><a class="submitBtn" style="" id="sendId_a" onclick="toolbarsendId_aClick(this)" onmouseenter="null" onmouseleave="null" onmouseover="null" onmouseout="null"><em id="sendId_em" class="syIcon sy-release" style="color:#;"></em><span id="sendId_span" class="menu_span" title="发送">发送</span></a><a class="toolBtn" style="" id="saveDraft_a" onclick="toolbarsaveDraft_aClick(this)" onmouseenter="null" onmouseleave="null" onmouseover="null" onmouseout="null"><em id="saveDraft_em" class="ico16 save_traft_16"></em><span id="saveDraft_span" class="menu_span" title="保存待发">保存待发</span></a><a class="toolBtn" style="" id="refresh2_a" onclick="toolbarrefresh2_aClick(this)" onmouseenter="null" onmouseleave="null" onmouseover="null" onmouseout="null"><em id="refresh2_em" class="ico16 call_template_16"></em><span id="refresh2_span" class="menu_span" title="调用模板">调用模板</span></a><a class="toolBtn common_menu_dis" style="display: none;" id="conotentType_a" onmouseenter="void(0)" onmouseleave="void(0)" bakclick="null" bakonmouseenter="sub_conotentTypemouseenter('conotentType')" bakonmouseleave="sub_conotentTypemouseleave('conotentType')" bakonmouseover="null" bakonmouseout="null" onmouseover="void(0);" onmouseout="void(0);" onclick="void(0);"><em id="conotentType_em" class="ico16 text_type_16"></em><span id="conotentType_span" class="menu_span" title="正文类型">正文类型</span><em id="conotentType" class="sub_ico" style="margin-right:0px;margin-left:6px;"></em></a><a class="toolBtn" style="" id="refresh1_a" onclick="toolbarrefresh1_aClick(this)" onmouseenter="null" onmouseleave="null" onmouseover="null" onmouseout="null"><em id="refresh1_em" class="ico16 save_template_16"></em><span id="refresh1_span" class="menu_span" title="存为模板">存为模板</span></a><a class="toolBtn" style="" id="print_a" onclick="toolbarprint_aClick(this)" onmouseenter="null" onmouseleave="null" onmouseover="null" onmouseout="null"><em id="print_em" class="ico16 print_16"></em><span id="print_span" class="menu_span" title="打印">打印</span></a></div></div></div>
+					<span class="more_style more_style_position right margin_l_5" id="moreLabel" style="display: none;">
+						<a class="margin_l_5">更多 </a>
+						<span class="ico16 arrow_2_b"></span>
+					</span>
+			    </div>
+			    </div>
+	        <div class="centerbarArea" id="centerBar" style="overflow-y:hidden;background:#fff;">
+	        	<div id="north_area_h">
+				    <!--当前位置-->
+				    <div class="comp" comp="type:'breadcrumb',comptype:'location',code:'F01_newColl'" comptype="breadcrumb"></div>
+	                <!-- <div id="colMainData" class="form_area new_page"> -->
+				    <div id="colMainData" class="form_area padding_t_10">
+				        <input type="hidden" id="temformParentId" name="temformParentId" value="">
+					    <input type="hidden" id="resend" name="resend" value="false">
+					    <input type="hidden" id="newBusiness" name="newBusiness" value="1">
+					    <input type="hidden" id="id" name="id" value="7689747273941732006">
+					    <input type="hidden" id="parentSummaryId" name="parentSummaryId" value="">
+						<input type="hidden" id="attachmentArchiveId" name="attachmentArchiveId" value="">
+					    <input type="hidden" id="tId" name="tId" value="-6258732481612331848">
+					    <input type="hidden" id="curTemId" name="curTemId" value="-6258732481612331848">
+					    <input type="hidden" id="resentTime" name="resentTime" value="">
+					    <input type="hidden" id="archiveId" name="archiveId" value="">
+					    <input type="hidden" id="prevArchiveId" name="prevArchiveId" value="">
+					    <!-- 当前处理人信息 -->
+					    <input type="hidden" id="currentNodesInfo" name="currentNodesInfo" value="">
+						<input type="hidden" id="isCap4Forward" name="isCap4Forward" value="">
+					    <input type="hidden" id="tembodyType" name="tembodyType" value="20">
+					    <input type="hidden" id="formtitle" name="formtitle" value="LJCW04-差旅费报销单">
+					    <input type="hidden" id="saveAsTempleteSubject" name="saveAsTempleteSubject" value="">
+					    <input type="hidden" id="phaseId" name="phaseId" value="">
+	                    <input type="hidden" id="caseId" name="caseId" value="">
+	                    <input type="hidden" id="currentaffairId" name="currentaffairId" value="">
+	                    <input type="hidden" id="createDate" name="createDate" value="2025-07-28 14:19:13">
+	                    <input type="hidden" id="useForSaveTemplate" name="useForSaveTemplate" value="no">
+	                    <input type="hidden" id="oldProcessId" name="oldProcessId" value="">
+	                    <input type="hidden" id="temCanSupervise" name="temCanSupervise" value="true">
+	                    <input type="hidden" id="forwardMember" name="forwardMember" value="">
+	                    <input type="hidden" id="saveAsFlag" name="saveAsFlag">
+	                    <input type="hidden" id="transtoColl" name="transtoColl" value="0">
+	                    <input type="hidden" id="bzmenuId" name="bzmenuId" value="">
+	                    <input type="hidden" id="newflowType" name="newflowType" value="0">
+	                    <input type="hidden" id="contentViewState" name="contentViewState" value="1">
+	                    <input type="hidden" id="isOpenWindow" name="isOpenWindow" value="">
+	                    <input type="hidden" id="canTrackWorkFlow" name="canTrackWorkFlow" value="0">
+	                    <input type="hidden" id="bodyType" name="bodyType">
+	                    <input type="hidden" id="formRecordid" name="formRecordid">
+	                    <input type="hidden" id="formAppid" name="formAppid" value="1080815720585252099">
+	                    <input type="hidden" id="formViewOperation" name="formViewOperation" value="4914394298851871500.4540192329046508561_7079366253800672973.-5042336807069989483">
+	                    <input type="hidden" id="formParentid" name="formParentid" value="">
+	                    <input type="hidden" id="replyCounts" name="replyCounts" value="">
+
+	                    <input type="hidden" id="contentSaveId" name="contentSaveId">
+	                    <input type="hidden" id="contentDataId" name="contentDataId">
+	                    <input type="hidden" id="contentTemplateId" name="contentTemplateId">
+	                    <input type="hidden" id="contentRightId" name="contentRightId">
+	                    <input type="hidden" id="contentZWID" name="contentZWID" value="0">
+	                    <input type="hidden" id="contentSwitchId" name="contentSwitchId" value="">
+	                    <input type="hidden" id="DR" name="DR" value="">
+	                    <input type="hidden" id="messageRuleId" name="messageRuleID" value="">
+	                    <input type="hidden" id="advancePigeonhole" name="advancePigeonhole" value="">
+	                    <input type="hidden" id="contentIdUseDelete" name="contentIdUseDelete" value="0">
+	                    <input type="hidden" id="canAddComment" name="canAddComment" value="true"><input type="hidden" id="referType" name="referType" value="">   <!-- 新建穿透-来源 -->
+	                    <input type="hidden" id="referId" name="referId" value=""> <!-- 新建穿透-标识 -->
+	                    <input type="hidden" id="mergeAttitude" name="mergeAttitude" value="2">
+	                    <input type="hidden" id="mergeContent" name="mergeContent" value="1">
+
+						<div class="coll_main_div">
+							<div class="row_record">
+								<div class="col_cell title_cell">
+									<div class="coll_label left" style="width:50px;text-align: right;">
+										<span>标题：</span>
+									</div>
+									<div class="coll_content" style="margin-left:50px;">
+									    <div class="common_txtbox_wrap" style="height:28px;">
+									         <!-- 标题 -->
+								                  <input id="subject" inputname="标题" class="w100b" type="text" name="subject" title="点击此处填写标题" value="差旅费报销单-{申请人}({审批单编号})" readonly="readonly" style="height:26px;line-height:26px;">
+								           	    </div>
+									</div>
+								</div>
+
+							<div class="col_cell" style="width:100px;margin-left:10px;">
+								 	<div class="common_selectbox_wrap common_txtbox_wrap comp_select_ctl" style="width:90px" id="id_1a0337a0-603b-ac2c-3a62-40ea23a94f5a">
+										<select name="importantLevel" id="importantLevel_select" class="comp comp_select" comp="type:'CtpUiComSelect'" comptype="CtpUiComSelect">
+											<option value="1" selected="" itemname="1">普通</option>
+<option value="2" itemname="1">重要</option>
+<option value="3" itemname="1">非常重要</option>
+
+</select>
+									<span class="sel_div" style="display: none;"></span><input class="sel_hide_input" type="hidden" id="importantLevel" name="importantLevel" value="1">
+                        <input class="sel_input" autocomplete="off" readonly="readonly" type="text" id="importantLevel_text" name="importantLevel" title="普通" value="普通" style="width: 70px;"><div id="id_e05257bd-45c4-3447-d7ae-36657d182035" style="border-left: 0;border-radius: 4px;line-height:26px;padding-left:0;" class="el-input-group__append">
+                <i style="font-size: 12px" class="syIcon sy-arrow-plane-down"></i>
+                <i style="font-size: 12px;position: relative;top:-1px;" class="syIcon sy-arrow-plane-up"></i>
+                <i style="font-size: 12px" class="clear_btn syIcon sy-delete-x"></i>
+         </div></div>
+							</div>
+
+							<div class="col_cell" style="width:220px">
+									<div class="coll_label left" style="width:92px;">
+										</div>
+									<div class="coll_content" style="margin-left:94px;width:120px;">
+										</div>
+							    </div>
+
+					           	    </div>
+
+							<div class="row_record" style="margin-top:6px;height:auto;">
+
+								<div class="col_cell title_cell">
+									<div class="coll_label left" style="width:50px;text-align: right;">
+										<span>流程：</span>
+									</div>
+									<div class="coll_content" style="margin-left:50px;">
+									     <div id="process_info_div" class="common_txtbox_wrap common_txtbox_wrap_dis">
+	                                    <input readonly="readonly" class="w100b validate" type="text" id="process_info" style="cursor: auto" defaultvalue="点击新建流程" disabled="" value="发起者(协同)、所属中心负责人(协同)、首席技术官(协同)、空节点(知会)、徐丹倩(协同)、首席数据官(协同)、空节点(知会)、北京上海会计(协同)、西安成都会计(协同)、财务经理(协同)" name="process_info" title="请点击“查看流程”查看流程详情
+	                                    ">
+	                                </div>
+									</div>
+								</div>
+
+
+								<div class="col_cell" style="width:100px;margin-left:10px;">
+									 <div id="workflowInfo" onclick="workflowClick()" style="width:88px">
+					                	<input type="hidden" id="varFinalWfProcessId" name="varFinalWfProcessId" value="-2314159372060900745">
+	                                    <a id="workflow_btn" comp="type:'workflowEdit',defaultPolicyId:'collaboration',defaultPolicyName:'协同',moduleType:'collaboration',isTemplate:true,isView:true,workflowId:'-2314159372060900745',canExePrediction:'false',SPK:'freeFlow'" class="common_button common_button_icon comp edit_flow" href="#" comptype="workflowEdit" filesecretlevel="">
+	                                            查看流程</a><!-- 查看流程 -->
+	                                    </div>
+								</div>
+
+
+								<div class="col_cell" style="width:220px">
+									<div class="coll_label left" style="width:92px;">
+										预归档到：</div>
+									<div class="coll_content" style="margin-left:94px;">
+										<div class="common_selectbox_wrap common_txtbox_wrap comp_select_ctl" style="width:120px" title="" id="id_3b698b79-d3cf-e8e0-65d5-08602c289c30">
+											<input type="hidden" name="isTemplateHasPigeonholePath" id="isTemplateHasPigeonholePath" value="false">
+
+							          	    <select id="colPigeonhole_select" class="input-100per comp comp_select" comp="type:'CtpUiComSelect'" onchange="pigeonholeEvent(this)" comptype="CtpUiComSelect">
+										        <option id="defaultOption" value="1">无</option>
+		                                        <!-- 请选择 -->
+										        <option id="modifyOption" value="2">请选择</option>
+										        </select>
+
+	                                  		<span class="sel_div" style="display: none;"></span><input class="sel_hide_input" type="hidden" id="colPigeonhole" name="null" value="1">
+                        <input class="sel_input" autocomplete="off" readonly="readonly" type="text" id="colPigeonhole_text" name="null" title="无" value="" style="width: 100px;"><div id="id_c0146b1d-99b7-b3bb-56ff-0ea25e5a8ead" style="border-left: 0;border-radius: 4px;line-height:26px;padding-left:0;" class="el-input-group__append">
+                <i style="font-size: 12px" class="syIcon sy-arrow-plane-down"></i>
+                <i style="font-size: 12px;position: relative;top:-1px;" class="syIcon sy-arrow-plane-up"></i>
+                <i style="font-size: 12px" class="clear_btn syIcon sy-delete-x"></i>
+         </div></div>
+									 </div>
+							    </div>
+
+							</div>
+
+							<div class="row_record" style="margin-top:2px;">
+									<div class="col_cell" style="margin-left:10px;">
+									   	<span style="display:inline-block; margin-left:2px; ">
+						            		<!-- <span class="font_size12 color_666 margin_r_20 hand" onclick="insertAttachmentPoi('Att')">
+							            			<span class="ico16 affix_16 margin_b_5"></span>
+							            			上传附件</span> -->
+							            		<span id="upload" style="display:inline-block;"><div class="uploadFullScreenDrag " id="" style="min-width:150px;height:20px;">
+						<span class="syIcon sy-attachment UFSDicon" style="">
+						</span><span class="UFSDcontent" style="">上传附件</span><span class="UFSDtips">(最大300M)</span><span class="syIcon sy-help-line UFSDhelpBtn"></span><input type="file" multiple="multiple" class="UFSDinput">
+			<div class="UFSDprogressBar"></div>
+		</div></span>
+						            		<span class="font_size12 color_666 hand" onclick="quoteDocument('Doc1')">
+							            			<span class="syIcon sy-associated_document margin_b_5"></span>
+							            			<span style="color:#333">关联文档</span>
+							            		</span>
+											</span>
+								    </div>
+
+
+
+									<div class="col_cell right" style="padding-right:2px;float:right">
+									  <span class="padding_r_25 right" style="display:inline-block;text-align:right; ">
+						            	<a id="show_more" class="clearfix" style="width:100px;">
+						            		<span class="syIcon sy-setting"></span>
+						            		<span style="position:relative;top:-2px;font-size:12px;font-family:PingFangSC-Regular,PingFang SC;font-weight:400;color:#666666;line-height:17px;">更多设置</span> <!-- 更多设置 -->
+						            	</a>
+						            </span>
+								    </div>
+
+
+							</div>
+
+						</div>
+
+				             <!--更多-->
+	 					<div id="moreInfoBodyDiv">
+							<div id="moreInfoDiv" style="display:none;font-size:12px;line-height:28px;">
+								<div class="leftCell left" style="width:50%">
+									<div class="go_panel track_cell">
+										<div class="title">
+											<span class="ctpUiCheckbox">
+												<input id="canTrack" name="canTrack" onclick="trackOrnot()" value="1" class="radio_com" type="checkbox" checked="checked">
+												<label style="font-weight:bold;" for="canTrack" class=""><i></i>跟踪：</label>
+											</span>
+										</div>
+										<div class="content">
+											<div>
+												<span class="" id="radioallSpan">
+													<label class="margin_r_10 hand" for="radioall">
+														<input id="radioall" name="radioperson" onclick="_hiddenPartTrackNameInput()" value="0" type="radio" class="radio_com">全部人员</label>
+												</span>
+											</div>
+											<div>
+												<div style="float:left;">
+												<label class="margin_r_10 hand" for="radiopart">
+													<input id="radiopart" name="radioperson" onclick="trackPart()" value="0" type="radio" class="radio_com">指定人员</label>
+												<input type="hidden" id="zdgzry" name="zdgzry">
+		</div>
+												<div class="common_txtbox_wrap hasPreBtn " style="display: none;width:122px;float:left;" id="zdgzryNameDiv">
+													<input type="text" style="width: 92px;" id="zdgzryName" readonly="" name="zdgzryName" comp="type:'CtpUiSuffixBtnInput',pattern:'icon',icon:'syIcon sy-choose-persons1'" class="comp" size="15" onclick="$('#radiopart').click()" comptype="CtpUiSuffixBtnInput" autocomplete="off"><div style="position: absolute;right:0;" id="id_692c6f5d-1450-5206-b101-d3035c6d9304" class="el-input-group__appendicon"><span class="syIcon sy-choose-persons1"></span></div>
+											  </div>
+											</div>
+										</div>
+									</div>
+
+									  <!-- 允许操作 -->
+									<div class="go_panel operation_cell" style="margin-top:22px;">
+										<div class="title" style="font-weight:bold;">允许操作：</div>
+										<div class="content">
+											<span class="ctpUiCheckbox" style="width:72px;">
+												<input type="checkbox" value="1" id="canForward" disabled="" class="radio_com" checked="">
+												<label for="canForward" class=""><i></i>转发</label>
+											</span>
+
+
+											<span class="ctpUiCheckbox" style="width:74px;">
+													<input type="checkbox" value="1" id="canArchive" disabled="" class="radio_com" checked="">
+													<label for="canArchive" class=""><i></i>归档</label>
+												</span>
+											<!--规则：系统流程模板改变流程置灰   其余4个都可以修改，不置灰的。
+	                                		系统格式模板改变流程可以修改不置灰，其他都灰色不能修改。-->
+
+											<span class="ctpUiCheckbox">
+												<input type="checkbox" value="1" id="canEditAttachment" disabled="" class="radio_com" checked="">
+												<label for="canEditAttachment" class=""><i></i>修改附件</label>
+											</span>
+
+											<span class="ctpUiCheckbox">
+												<input type="checkbox" value="1" id="canEdit" disabled="" class="radio_com">
+												<label for="canEdit" class=""><i></i>修改正文</label>
+											</span>
+
+										    <span class="ctpUiCheckbox">
+												<input type="checkbox" value="1" id="canModify" disabled="" class="radio_com" checked="">
+												<label for="canModify" class=""><i></i>改变流程</label>
+											</span>
+
+
+											<span class="ctpUiCheckbox">
+												<input type="checkbox" value="1" id="canDeleteNode" disabled="disabled" class="radio_com" checked="checked">
+												<label for="canDeleteNode" class=""><i></i>减签时允许减掉流程模板中的固定人员</label>
+											</span>
+											</div>
+								     </div>
+
+								     <div class="go_panel operation_cell" style="margin-top:22px;">
+	                                    <div class="title" style="font-weight:bold;">合并处理策略:</div> <!-- 合并处理策略 -->
+	                                    <div class="content">
+											<span class="ctpUiCheckbox">
+												<input type="checkbox" value="2" disabled="disabled" id="canStartMerge">
+												<label for="canStartMerge" class=""><i></i>处理人就是发起人</label>
+											</span>
+
+											<span class="ctpUiCheckbox">
+												<input type="checkbox" value="3" disabled="disabled" id="canPreDealMerge">
+												<label for="canPreDealMerge" class=""><i></i>处理人和上一步相同</label>
+											</span>
+
+										    <span class="ctpUiCheckbox">
+												<input type="checkbox" value="4" disabled="disabled" id="canAnyDealMerge" checked="">
+												<label for="canAnyDealMerge" class=""><i></i>处理人已处理过</label>
+											</span>
+
+											<br>
+											<span class="ctpUiCheckbox">
+	                                            <input type="checkbox" value="1" disabled="disabled" id="mergeIgnoreCommentRequired">
+	                                            <label for="mergeIgnoreCommentRequired" class=""><i></i>忽略节点意见必填</label> <!-- 忽略节点意见必填 -->
+	                                        </span>
+
+										    <br>
+										    <label disabled="disabled">设置合并处理意见</label> <br>
+										    <label>态度： </label> <!-- 态度 -->
+	                                        <span class="ctpUiRadio">
+										        <input type="radio" disabled="disabled" value="" id="mergeAttitudeNull">
+										        <label for="mergeAttitudeNull" class=""><i></i>空</label> <!-- 空 -->
+										    </span>
+										    <span class="ctpUiRadio">
+										        <input type="radio" disabled="disabled" value="1" id="mergeAttitudeDefault">
+										        <label for="mergeAttitudeDefault" class=""><i></i>节点默认态度</label> <!-- 节点默认态度 -->
+										    </span>
+										    <span class="ctpUiRadio">
+	                                            <input type="radio" disabled="disabled" value="2" id="mergeAttitudeLast" checked="checked">
+	                                            <label for="mergeAttitudeLast" class=""><i></i>处理人上次处理态度</label> <!-- 处理人上次处理态度 -->
+	                                        </span>
+
+	                                        <br>
+	                                        <label>意见：</label> <!-- 意见 -->
+	                                        <span class="ctpUiRadio">
+	                                            <input type="radio" disabled="disabled" value="" id="mergeContentNull">
+	                                            <label for="mergeContentNull" class=""><i></i>空</label> <!-- 空 -->
+	                                        </span>
+	                                        <span class="ctpUiRadio">
+	                                            <input type="radio" disabled="disabled" value="1" id="mergeContentLast" checked="checked">
+	                                            <label for="mergeContentLast" class=""><i></i>处理人上次处理意见</label> <!-- 处理人上次处理意见 -->
+	                                        </span>
+
+										</div>
+									</div>
+								</div>
+
+								<div class="rightCell left" style="width:49%;padding-top:10px">
+								        <div class="row_record">
+												<div class="col_cell left" style="width:60%">
+													<div class="coll_label left" style="width:80px;text-align: right;">
+														<span>流程期限：</span>
+													</div>
+													<div class="coll_content" style="margin-left:80px;">
+														  <div class="common_selectbox_wrap common_txtbox_wrap comp_select_ctl" style="width:110px;" id="id_de8805ce-24f9-71e8-3155-c1a2d7bbeb65">
+																<select name="deadlineTemplate" id="deadlineTemplate_select" style="width: 100%" class="comp comp_select" comp="type:'CtpUiComSelect',isInLayer:true" comptype="CtpUiComSelect">
+																	<option value="0" selected="">无</option>
+																	<option value="60">1小时</option>
+																	<option value="120">2小时</option>
+																	<option value="180">3小时</option>
+																	<option value="240">4小时</option>
+																	<option value="300">5小时</option>
+																	<option value="360">6小时</option>
+																	<option value="420">7小时</option>
+																	<option value="1440">1天</option>
+																	<option value="2880">2天</option>
+																	<option value="4320">3天</option>
+																	<option value="5760">4天</option>
+																	<option value="7200">5天</option>
+																	<option value="8640">6天</option>
+																	<option value="14400">10天</option>
+																	<option value="10080">1周</option>
+																	<option value="20160">2周</option>
+																	<option value="30240">3周</option>
+																	<option value="21600">半个月</option>
+																	<option value="43200">1个月</option>
+																	<option value="86400">2个月</option>
+																	<option value="129600">3个月</option>
+																	<option value="-1">自定义</option>
+																	</select>
+															<span class="sel_div" style="display: none;"></span><input class="sel_hide_input" type="hidden" id="deadlineTemplate" name="deadlineTemplate" value="0">
+                        <input class="sel_input" autocomplete="off" readonly="readonly" type="text" id="deadlineTemplate_text" name="deadlineTemplate" title="无" value="无" style="width: 90px;"><div id="id_8044601c-b240-18bf-b676-287e15fa5f29" style="border-left: 0;border-radius: 4px;line-height:26px;padding-left:0;" class="el-input-group__append">
+                <i style="font-size: 12px" class="syIcon sy-arrow-plane-down"></i>
+                <i style="font-size: 12px;position: relative;top:-1px;" class="syIcon sy-arrow-plane-up"></i>
+                <i style="font-size: 12px" class="clear_btn syIcon sy-delete-x"></i>
+         </div></div>
+													</div>
+												</div>
+												<div class="col_cell left">
+													<div id="deadLineCalender" style="display:none" class="common_txtbox_wrap hasPreBtn CtpUiCalendarObj">
+												   <input id="deadLineDateTime" type="text" style="width:131px;" class="comp" comp="type:'CtpUiCalendarObj',hasIcon:true,ifFormat:'%Y-%M-%d %H:%i',showsTime:true,onUpdate:checkDeadLineDateTime" comptype="CtpUiCalendarObj" autocomplete="off"><div style="position: absolute;right:0;" id="id_3143ee73-3714-ffcb-b691-1f29ec847837" class="el-input-group__appendicon"><span class="syIcon sy-date-select"></span></div>
+													</div>
+													<input type="hidden" name="deadLineDateTimeHidden" id="deadLineDateTimeHidden" value="">
+												</div>
+
+										</div>
+										<div class="row_record">
+											<div class="col_cell left" style="width:60%">
+													<div class="coll_label left" style="width:80px;text-align: right;">
+														<span>提前提醒：</span>
+													</div>
+													<div class="coll_content" style="margin-left:80px;">
+														   	<div class="common_selectbox_wrap common_txtbox_wrap comp_select_ctl" style="width:110px;" id="id_15586af8-49ba-8c76-11f3-6e218fab0d75">
+																<select name="advanceRemind" id="advanceRemind_select" style="width: 100%" class="comp comp_select" comp="type:'CtpUiComSelect',isInLayer:true" comptype="CtpUiComSelect">
+																	<option value="0" selected="" itemname="5">无</option>
+<option value="5" itemname="5">5分钟</option>
+<option value="10" itemname="5">10分钟</option>
+<option value="15" itemname="5">15分钟</option>
+<option value="30" itemname="5">30分钟</option>
+<option value="60" itemname="5">1小时</option>
+<option value="120" itemname="5">2小时</option>
+<option value="180" itemname="5">3小时</option>
+<option value="240" itemname="5">4小时</option>
+<option value="480" itemname="5">8小时</option>
+<option value="720" itemname="5">0.5天</option>
+<option value="1440" itemname="5">1天</option>
+<option value="2880" itemname="5">2天</option>
+<option value="4320" itemname="5">3天</option>
+<option value="10080" itemname="5">1周</option>
+
+</select>
+															<span class="sel_div" style="display: none;"></span><input class="sel_hide_input" type="hidden" id="advanceRemind" name="advanceRemind" value="0">
+                        <input class="sel_input" autocomplete="off" readonly="readonly" type="text" id="advanceRemind_text" name="advanceRemind" title="无" value="无" style="width: 90px;"><div id="id_6d12a724-a10f-156a-ab9b-ea6d6cf50485" style="border-left: 0;border-radius: 4px;line-height:26px;padding-left:0;" class="el-input-group__append">
+                <i style="font-size: 12px" class="syIcon sy-arrow-plane-down"></i>
+                <i style="font-size: 12px;position: relative;top:-1px;" class="syIcon sy-arrow-plane-up"></i>
+                <i style="font-size: 12px" class="clear_btn syIcon sy-delete-x"></i>
+         </div></div>
+													</div>
+												</div>
+
+
+										</div>
+										<div class="row_record" style="padding-left:20px;">
+										  <label class="hand" for="remindTime">
+	                                        <span class="ctpUiCheckbox">
+													<input type="checkbox" value="1" id="remindIntervalCheckBox" name="remindIntervalCheckBox" disabled="">
+													<label for="remindIntervalCheckBox" class=""><i></i>超期后重复提醒</label>
+												</span>
+	                                        </label>
+
+										</div>
+
+
+										<div class="row_record" style="padding-left:20px;">
+											<span class="left">每</span> <!-- 每 -->
+											<div class="col_cell left">
+												<div class="common_selectbox_wrap" style="width:75px;">
+													<select style="width:60px" name="remindInterval" id="remindInterval" class="codecfg margin_l_5" disabled="" codecfg="codeId:'common_remind_time',defaultValue:''">
+													<option value="0">无</option><option value="5">5分钟</option><option value="10">10分钟</option><option value="15">15分钟</option><option value="30">30分钟</option><option value="60">1小时</option><option value="120">2小时</option><option value="180">3小时</option><option value="240">4小时</option><option value="480">8小时</option><option value="720">0.5天</option><option value="1440">1天</option><option value="2880">2天</option><option value="4320">3天</option><option value="10080">1周</option></select>
+												</div>
+	                                          </div>
+												<div class="col_cell left" style="margin-left:1px;">
+													<lable title="提醒一次(督办人，当前处理人)">
+														提醒一次(督办人，当前处理人)</lable>
+												</div>
+
+										</div>
+
+										<div class="row_record">
+											 <div class="common_checkbox_box clearfix left " style="padding-left:20px;text-align:left;display:inline-block;">
+
+												<div class="col_cell left">
+													<span class="ctpUiCheckbox">
+														<input type="checkbox" value="1" id="processTermTypeCheck" name="processTermTypeCheck" disabled="">
+														<label for="processTermTypeCheck" class=""><i></i>流程期限到时</label>
+													</span>
+												</div>
+												<div class="col_cell left">
+													<div class="common_selectbox_wrap common_txtbox_wrap comp_select_ctl disabled" style="width:160px;" id="id_f967fd47-fd44-d90f-8c17-c2ff2774abcf">
+														<select id="processTermType_select" style="width:73px" class="comp comp_select" comp="type:'CtpUiComSelect',isInLayer:true" name="processTermType" disabled="" comptype="CtpUiComSelect">
+															<option value="0">自动终止</option>
+															<option value="1">自动撤销</option>
+														</select>
+													<span class="sel_div" style="display: none;"></span><input class="sel_hide_input" type="hidden" id="processTermType" name="processTermType" value="0">
+                        <input class="sel_input disabled" autocomplete="off" readonly="readonly" type="text" id="processTermType_text" name="processTermType" title="自动终止" value="" style="width: 140px;"><div id="id_89d60814-c8e9-5aca-d22c-ec334593fbe2" style="border-left: 0;border-radius: 4px;line-height:26px;padding-left:0;" class="el-input-group__append">
+                <i style="font-size: 12px" class="syIcon sy-arrow-plane-down"></i>
+                <i style="font-size: 12px;position: relative;top:-1px;" class="syIcon sy-arrow-plane-up"></i>
+                <i style="font-size: 12px" class="clear_btn syIcon sy-delete-x"></i>
+         </div></div>
+												</div>
+											</div>
+										</div>
+										<div class="row_record bottom_reocrd" style="margin-top:20px;">
+										<!-- 督办人员 -->
+											<div class="col_cell">
+													<div class="coll_label left" style="text-align: right;">
+														<span>督办人员：</span>
+													</div>
+													<div class="coll_content">
+
+														<input type="hidden" name="unCancelledVisor" id="unCancelledVisor" value="2473251027571984562">
+														<input type="hidden" name="supervisorIds" id="supervisorIds" value="2473251027571984562">
+														<input type="hidden" name="detailId" id="detailId" value="">
+
+														  <div class="common_txtbox_wrap hasPreBtn " style="width:242px;">
+															<input id="supervisorNames" style="width: 212px;" name="supervisorNames" comp="type:'CtpUiSuffixBtnInput',pattern:'icon',icon:'syIcon sy-choose-persons1'" class="comp" onclick="superviseNamesClick()" value="郭宏斌" type="text" comptype="CtpUiSuffixBtnInput" autocomplete="off"><div style="position: absolute;right:0;" id="id_e4273852-894f-e35b-5dc0-81964adaffb0" class="el-input-group__appendicon"><span class="syIcon sy-choose-persons1"></span></div>
+																</div>
+													</div>
+												</div>
+										</div>
+										<div class="row_record bottom_reocrd">
+
+											<div class="col_cell left" style="width:100%">
+													<div class="coll_label left" style="text-align: right;">
+														<span>督办期限：</span>
+													</div>
+													<div class="coll_content">
+														  <div class="common_txtbox_wrap hasPreBtn CtpUiCalendarObj">
+															<input id="awakeDate" class="comp" value="2025-07-31 14:19" type="text" comp="type:'CtpUiCalendarObj',ifFormat:'%Y-%M-%d %H:%i',hasIcon:true,showsTime:true,onUpdate:checkAwakeDate" readonly="" comptype="CtpUiCalendarObj" autocomplete="off"><div style="position: absolute;right:0;" id="id_77ad8b2a-c75d-b1fb-cfe5-d71b631829a7" class="el-input-group__appendicon"><span class="syIcon sy-date-select"></span></div>
+																</div>
+												</div>
+
+
+	                                    </div>
+										</div>
+										<div class="row_record bottom_reocrd" style="margin-bottom:0;">
+											  <div class="col_cell left" style="width:100%">
+													<div class="coll_label left" style="text-align: right;">
+														<span>督办主题：</span>
+													</div>
+													<div class="coll_content">
+															<div class="common_txtbox_wrap" style="border:0">
+															<textarea class="w100b font_size12" title="" style="height: 28px;resize:none;margin-left:0;" id="title" name="superviseTitle"></textarea>
+																</div>
+													</div>
+												</div>
+										</div>
+
+										</div>
+							 </div>
+						</div>
+
+				            <div class="attachmentArea">
+				            <div id="attachmentTRAtt" style="display:none;">
+	                        <table border="0" cellspacing="0" cellpadding="0" width="100%" class="line_height180">
+	                            <tbody><tr id="attList">
+	                                <td class="align_right" valign="top" style="width: 38px">
+	                                	<div class="div-float margin_t_5">
+	                                	<em class="syIcon sy-attachment" style="color:#1F85EC;"></em>
+	                                	</div>
+	                                </td>
+	                                <td valign="top" width="20" nowrap="nowrap"><div class="div-float margin_t_5 margin_r_5">(<span id="attachmentNumberDivAtt"></span>) </div></td>
+	                                <td class="align_left">
+	                                    <div id="attFileDomain" class="comp" comp="type:'fileupload',attachmentTrId:'Att',applicationCategory:'1',canFavourite:false,canDeleteOriginalAtts:true,originalAttsNeedClone:true,callMethod:'insertAtt_AttCallback',delCallMethod:'insertAtt_AttCallback',takeOver:false,noMaxheight:true" attsdata="[]" comptype="fileupload" style="display: none;"></div><div id="attachmentAreaAtt" style="overflow: auto; *font-size:0;overflow-x:hidden;" requrl="/seeyon/fileUpload.do?type=0&amp;inputId=attFileDomain&amp;applicationCategory=1&amp;extensions=&amp;maxSize=&amp;isEncrypt=&amp;popupTitleKey=&amp;attachmentTrId=Att&amp;callMethod=insertAtt_AttCallback&amp;takeOver=false" delcallmethod="insertAtt_AttCallback"></div><div style="display:none;"><iframe name="downloadFileFrame" id="downloadFileFrame" frameborder="0" width="0" height="0"></iframe></div>
+	                                </td>
+	                            </tr>
+	                        </tbody></table>
+	                    </div>
+	                    <div id="attachment2TRDoc1" style="display:none; margin-top:4px;">
+	                        <table border="0" cellspacing="0" cellpadding="0" width="100%" class="line_height180">
+	                            <tbody><tr id="docList">
+	                                <td class="align_right" valign="top" style="width: 39px"><div class="margin_t_5"><span style="color:#1F85EC;" class="syIcon sy-associated_document"></span></div> </td>
+	                                <td valign="top" width="20" nowrap="nowrap"><div class="div-float margin_t_5 margin_r_5">(<span id="attachment2NumberDivDoc1"></span>) </div></td>
+	                                <td class="align_left">
+	                                    <div class="comp" id="assDocDomain" comp="type:'assdoc',showRelateDocSecret:'true',attachmentTrId:'Doc1',modids:'1,3',applicationCategory:'1',referenceId:'',canDeleteOriginalAtts:true,originalAttsNeedClone:true,callMethod:'insertAtt_AttCallback',delCallMethod:'insertAtt_AttCallback',noMaxheight:true" attsdata="[]" comptype="assdoc" style="font-size: 0px;"></div><div id="attachment2AreaDoc1" poi="Doc1" callmethod="insertAtt_AttCallback" requesturl="/seeyon/ctp/common/associateddoc/assdocFrame.do?isBind=1,3&amp;referenceId=&amp;applicationCategory=1&amp;poi=Doc1&amp;showRelateDocSecret=true" style="overflow: auto; *font-size:0;"></div>
+	                                </td>
+	                            </tr>
+	                        </tbody></table>
+	                    </div>
+	                    </div>
+
+	                </div>
+	            </div>
+	        <!--jsp:include page="/WEB-INF/jsp/common/content/content.jsp" /-->
+	        
+
+
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+  var _wfctxPath = '/seeyon';
+  var _ctxPath = '/seeyon';
+  var _wfcurrentUserId = '2473251027571984562'+'';
+  var hasWorkflowEvent = 'true';
+  var matchRequestToken= '2052182366718545071';
+  var wfDiagram_v = "f5882bd761924a5c829112a512eaa1a5";
+  var isExactMatchingMode= ("true" == "true");
+</script>
+<script src="/seeyon/common/cap-dynamic-front/load.js?V=V8_2SP1_231013_1903070"></script><script src="https://oa.topprismdata.com/seeyon/common/cap-dynamic-front/js/collaboration/invoiceOcr.js?V=V8_2SP1_231013_1903070"></script>
+<script type="text/javascript" src="/seeyon/common/workflow/workflowDesigner_ajax.js?V=V8_2SP1_231013_1903070"></script>
+
+<script type="text/javascript" src="/seeyon/common/workflow/workflowDesigner_api-min.js?V=V8_2SP1_231013_1903070"></script>
+
+
+<div id="workflow_definition" style="display: none">
+    
+    <input type="hidden" id="process_desc_by">
+    <input type="hidden" id="process_xml">
+    
+    <input type="hidden" id="readyObjectJSON">
+    
+    <input type="hidden" id="process_info">
+    
+    <input type="hidden" id="process_info_selectvalue">
+    
+    <input type="hidden" id="process_subsetting">
+    <input type="hidden" id="moduleType" value="1">
+    
+    <input type="hidden" id="workflow_newflow_input">
+    
+    <input type="hidden" id="process_rulecontent">
+    
+    <input type="hidden" id="workflow_node_peoples_input">
+    
+    <input type="hidden" id="workflow_node_condition_input">
+    <input type="hidden" id="processId" value="">
+    <input type="hidden" id="caseId" value="-1">
+    <input type="hidden" id="subObjectId" value="-1">
+    <input type="hidden" id="currentNodeId" value="-1">
+    
+    <input type="hidden" id="process_message_data">
+    
+    <input type="hidden" id="processChangeMessage">
+    
+    <input type="hidden" id="process_event">
+    
+        
+    <input type="hidden" id="process_properties">
+    
+    
+    <input type="hidden" id="toReGo">
+    
+    <input type="hidden" id="dynamicFormMasterIds">
+    
+   	
+    <input id="workflow_last_input" name="workflow_last_input" type="hidden">
+    
+	
+	<input id="workflow_thisNodelast_input" name="workflow_thisNodelast_input" type="hidden">
+	
+    
+    <input type="hidden" id="workflow_data_flag" name="workflow_data_flag" value="WORKFLOW_SEEYON">
+    <input type="hidden" id="newGenerateNodeId" name="newGenerateNodeId" value="">
+    <input type="hidden" id="newGenerateOtherNodeIds" name="newGenerateOtherNodeIds" value="">
+</div>
+<script type="text/javascript">
+  $.content.getWorkflowDomains = function(moduleType, domains) {
+    if (!domains)
+      domains = [];
+    $("#workflow_definition #moduleType").val(moduleType);
+    domains.push("workflow_definition");
+    return domains;
+  };
+
+</script><textarea id="formTextId" class="hidden"></textarea>
+	        <div class="overflow_auto" id="contentAndComment" style="overflow-y: auto; background: rgb(243, 243, 243); height: 428px;">
+
+
+	        <iframe id="zwIframe" name="zwIframe" src="/seeyon/common/cap4/template/display/pc/form/dist/index.html?_r=v&amp;type=create&amp;rightId=4914394298851871500.4540192329046508561_7079366253800672973.-5042336807069989483&amp;moduleId=-6258732481612331848&amp;subState=&amp;isSubFlow=false&amp;moduleType=1&amp;sourceType=&amp;sourceId=&amp;affairId=-1" style="border: 0px; width: 100%; height: 428px; display: block;" frameborder="0" marginheight="0" marginwidth="0"></iframe>
+	             </div>
+          <div class="over_hidden" id="comment_deal" style="z-index: 2; height: 41px; background: rgb(243, 243, 243); width: 100%; text-align: center; position: absolute; bottom: 0px;">
+               <input type="hidden" id="id" value="">
+               <input type="hidden" id="pid" value="0">
+               <input type="hidden" id="clevel" value="1"> <input type="hidden" id="path" value="00">
+               <input type="hidden" id="moduleType" value="1">
+               <input type="hidden" id="moduleId" value="-6258732481612331848">
+               <input type="hidden" id="extAtt1">
+               <input type="hidden" id="relateInfo">
+               <input type="hidden" id="ctype" value="-1">
+
+               <table style="background:#F3F3F3;position: relative;width:786px;left: 50%;margin-left: -393px;" class="h100b" cellpadding="0" cellspacing="0" border="0">
+                   <tbody><tr>
+                       <td id="adtional" valign="middle" align="left" height="35" class="padding_t_5 font_size12">
+                           <em id="adtional_ico" class="ico16 arrow_2_b msg_expansionIco margin_ico margin_b_5"></em>
+                           <span class="adtional_text margin_t_5 font_size14 color_666">附言</span>
+                       </td>
+                   </tr>
+                   <tr id="fuyan_area" class="hidden">
+                       <td id="fuyan" valign="top" align="center" class="editadt_box padding_l_5">
+                           <div class="fuyan_area_div">
+                               <textarea style="width: 766px; padding: 0px 5px; font-size: 12px; min-height: 115px; border: 0px; color: rgb(163, 163, 163);" class="h100b" id="content_coll" name="content_coll" onfocus="checkContent();" onblur="checkContentOut();"></textarea>
+                           </div>
+                       </td>
+                   </tr>
+               </tbody></table>
+           </div>
+       </div>
+   </div>
+   <!-- 右侧 -->
+   <div class="newColl_layout_right">
+       </div>
+	</div>
+</form>
+<script type="text/javascript">
+OfficeObjExt.showExt = newColOfficeObjExtshowExt;
+var dragUploadElement = document.getElementById("upload");
+if(dragUploadElement){
+	var ctpUpload = new CtpUiUploadFullScreenDrag(document.getElementById("upload"),{
+	  	dragDomTop:'187px', 
+		isSetSecretLevel:"false",
+		secretLevel: getAccessFileSecretLevel(),
+		isSetSecretLevelSure: true,
+		isEncrypt:true,
+	  	callbackFuc:insertAtt_AttCallback
+	});
+}
+var relateAttachmentElement = document.getElementById("relateAttachmentSpan");
+if(relateAttachmentElement){
+    new CtpUiTooltip(document.getElementById("relateAttachmentSpan"),{
+		placement: "topStart",
+		content: $.i18n('common.toolbar.insert.relateAttachment.tips')//"可选取协同/公文中的附件选择上传"
+	});
+}
+var ofddivH ='';
+function showSpreadFunc() {
+    $("#zwIframe").contents().find("#officeEditorFrame").contents().find("#ofddiv").css("height",ofddivH).children().css("height",ofddivH);
+    ofddivH = '';
+}
+
+function hideSpreadFunc() {
+    if(!ofddivH){
+        ofddivH = $("#zwIframe").contents().find("#officeEditorFrame").contents().find("#ofddiv").css('height');
+    }
+    $("#zwIframe").contents().find("#officeEditorFrame").contents().find("#ofddiv").css("height","0px").children().css("height","0px");
+}
+oldSecretLevel = (window.secretLevel && window.secretLevel.value) || '';
+
+</script>
+
+
+<div class="ctpCalendar_base" style="display: none;"><div><div class="calendar_month_cont"><ul class="calendar_line"><li class="dhtmlxcalendar_cell calendar_month_hdr"><div class="calendar_month_arrow calendar_month_arrow_left"><span class="calendar_year_arrow syIcon sy-double-arrow-left"></span>&nbsp;<span class="calendar_month_arrow syIcon sy-arrow-left"></span></div><span><span class="calendar_month_label_year">2025</span>&nbsp;年 <span class="calendar_month_label_month">7月</span></span><div class="calendar_month_arrow calendar_month_arrow_right"><span class="calendar_month_arrow syIcon sy-arrow-right"></span>&nbsp;<span class="calendar_year_arrow syIcon sy-double-arrow-right"></span></div></li></ul></div><div class="calendar_days_cont"><ul class="calendar_line" id="id_77b7a046-0cf5-be39-bafd-05601ae16568"><li id="id_77b7a046-0cf5-be39-bafd-05601ae16568_0" class="dhtmlxcalendar_cell_wn"><div class="dhtmlxcalendar_label">w</div></li><li id="id_77b7a046-0cf5-be39-bafd-05601ae16568_1" class="dhtmlxcalendar_cell_first">一</li><li id="id_77b7a046-0cf5-be39-bafd-05601ae16568_2" class="dhtmlxcalendar_cell">二</li><li id="id_77b7a046-0cf5-be39-bafd-05601ae16568_3" class="dhtmlxcalendar_cell">三</li><li id="id_77b7a046-0cf5-be39-bafd-05601ae16568_4" class="dhtmlxcalendar_cell">四</li><li id="id_77b7a046-0cf5-be39-bafd-05601ae16568_5" class="dhtmlxcalendar_cell">五</li><li id="id_77b7a046-0cf5-be39-bafd-05601ae16568_6" class="dhtmlxcalendar_cell dhtmlxcalendar_day_weekday_cell">六</li><li id="id_77b7a046-0cf5-be39-bafd-05601ae16568_7" class="dhtmlxcalendar_cell dhtmlxcalendar_day_weekday_cell">天</li></ul></div><div class="calendar_dates_cont"><ul class="calendar_line"><li class="dhtmlxcalendar_cell_wn"><div class="dhtmlxcalendar_label">27</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell"><div class="dhtmlxcalendar_label">30</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">1</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">2</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">3</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">4</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month_weekend"><div class="dhtmlxcalendar_label">5</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month_weekend"><div class="dhtmlxcalendar_label">6</div></li></ul><ul class="calendar_line"><li class="dhtmlxcalendar_cell_wn"><div class="dhtmlxcalendar_label">28</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">7</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">8</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">9</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">10</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">11</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month_weekend"><div class="dhtmlxcalendar_label">12</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month_weekend"><div class="dhtmlxcalendar_label">13</div></li></ul><ul class="calendar_line"><li class="dhtmlxcalendar_cell_wn"><div class="dhtmlxcalendar_label">29</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">14</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">15</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">16</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">17</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">18</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month_weekend"><div class="dhtmlxcalendar_label">19</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month_weekend"><div class="dhtmlxcalendar_label">20</div></li></ul><ul class="calendar_line"><li class="dhtmlxcalendar_cell_wn"><div class="dhtmlxcalendar_label">30</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">21</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">22</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">23</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">24</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">25</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month_weekend"><div class="dhtmlxcalendar_label">26</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month_weekend"><div class="dhtmlxcalendar_label">27</div></li></ul><ul class="calendar_line"><li class="dhtmlxcalendar_cell_wn"><div class="dhtmlxcalendar_label">31</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month_date"><div class="dhtmlxcalendar_label">28</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">29</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">30</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">31</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell"><div class="dhtmlxcalendar_label">1</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_weekend"><div class="dhtmlxcalendar_label">2</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_weekend"><div class="dhtmlxcalendar_label">3</div></li></ul><ul class="calendar_line"><li class="dhtmlxcalendar_cell_wn"><div class="dhtmlxcalendar_label">32</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell"><div class="dhtmlxcalendar_label">4</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell"><div class="dhtmlxcalendar_label">5</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell"><div class="dhtmlxcalendar_label">6</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell"><div class="dhtmlxcalendar_label">7</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell"><div class="dhtmlxcalendar_label">8</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_weekend"><div class="dhtmlxcalendar_label">9</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_weekend"><div class="dhtmlxcalendar_label">10</div></li></ul></div><div class="dhtmlxcalendar_time_cont" style="display: none; cursor: pointer;"></div><div id="id_e14c3327-4666-725f-97fd-8096f8914cf8" class="dhtmlxcalendar_time_cont dhtmlxcalendar_mode_time" style="cursor: pointer;"><ul class="calendar_line common_txtbox_wrap comp_select_ctl" id="id_95721c1b-96fa-28a2-2ca0-4719e25eae70"><li id="id_0cdb8bec-f6f8-3c50-6559-00f6c4f8fa34" class="dhtmlxcalendar_cell calendar_time_hdr" autocomplete="off"><div class="calendar_time_img syIcon sy-overdue"></div><span class="calendar_label_hours">14</span><span class="dhtmlxcalendar_label_colon">:</span><span class="calendar_label_minutes">19</span><span class="dhtmlxcalendar_label_clear">undefined</span><span class="calendar_label_today">undefined</span></li></ul></div></div></div><div class="ctpCalendar_base" style="display: none;"><div><div class="calendar_month_cont"><ul class="calendar_line"><li class="dhtmlxcalendar_cell calendar_month_hdr"><div class="calendar_month_arrow calendar_month_arrow_left"><span class="calendar_year_arrow syIcon sy-double-arrow-left"></span>&nbsp;<span class="calendar_month_arrow syIcon sy-arrow-left"></span></div><span><span class="calendar_month_label_year">2025</span>&nbsp;年 <span class="calendar_month_label_month">7月</span></span><div class="calendar_month_arrow calendar_month_arrow_right"><span class="calendar_month_arrow syIcon sy-arrow-right"></span>&nbsp;<span class="calendar_year_arrow syIcon sy-double-arrow-right"></span></div></li></ul></div><div class="calendar_days_cont"><ul class="calendar_line" id="id_55e38042-6342-9278-0cae-7f2ce66704a2"><li id="id_55e38042-6342-9278-0cae-7f2ce66704a2_0" class="dhtmlxcalendar_cell_wn"><div class="dhtmlxcalendar_label">w</div></li><li id="id_55e38042-6342-9278-0cae-7f2ce66704a2_1" class="dhtmlxcalendar_cell_first">一</li><li id="id_55e38042-6342-9278-0cae-7f2ce66704a2_2" class="dhtmlxcalendar_cell">二</li><li id="id_55e38042-6342-9278-0cae-7f2ce66704a2_3" class="dhtmlxcalendar_cell">三</li><li id="id_55e38042-6342-9278-0cae-7f2ce66704a2_4" class="dhtmlxcalendar_cell">四</li><li id="id_55e38042-6342-9278-0cae-7f2ce66704a2_5" class="dhtmlxcalendar_cell">五</li><li id="id_55e38042-6342-9278-0cae-7f2ce66704a2_6" class="dhtmlxcalendar_cell dhtmlxcalendar_day_weekday_cell">六</li><li id="id_55e38042-6342-9278-0cae-7f2ce66704a2_7" class="dhtmlxcalendar_cell dhtmlxcalendar_day_weekday_cell">天</li></ul></div><div class="calendar_dates_cont"><ul class="calendar_line"><li class="dhtmlxcalendar_cell_wn"><div class="dhtmlxcalendar_label">27</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell"><div class="dhtmlxcalendar_label">30</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">1</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">2</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">3</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">4</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month_weekend"><div class="dhtmlxcalendar_label">5</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month_weekend"><div class="dhtmlxcalendar_label">6</div></li></ul><ul class="calendar_line"><li class="dhtmlxcalendar_cell_wn"><div class="dhtmlxcalendar_label">28</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">7</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">8</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">9</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">10</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">11</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month_weekend"><div class="dhtmlxcalendar_label">12</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month_weekend"><div class="dhtmlxcalendar_label">13</div></li></ul><ul class="calendar_line"><li class="dhtmlxcalendar_cell_wn"><div class="dhtmlxcalendar_label">29</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">14</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">15</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">16</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">17</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">18</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month_weekend"><div class="dhtmlxcalendar_label">19</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month_weekend"><div class="dhtmlxcalendar_label">20</div></li></ul><ul class="calendar_line"><li class="dhtmlxcalendar_cell_wn"><div class="dhtmlxcalendar_label">30</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">21</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">22</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">23</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">24</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">25</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month_weekend"><div class="dhtmlxcalendar_label">26</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month_weekend"><div class="dhtmlxcalendar_label">27</div></li></ul><ul class="calendar_line"><li class="dhtmlxcalendar_cell_wn"><div class="dhtmlxcalendar_label">31</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month_date"><div class="dhtmlxcalendar_label">28</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">29</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">30</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_month"><div class="dhtmlxcalendar_label">31</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell"><div class="dhtmlxcalendar_label">1</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_weekend"><div class="dhtmlxcalendar_label">2</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_weekend"><div class="dhtmlxcalendar_label">3</div></li></ul><ul class="calendar_line"><li class="dhtmlxcalendar_cell_wn"><div class="dhtmlxcalendar_label">32</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell"><div class="dhtmlxcalendar_label">4</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell"><div class="dhtmlxcalendar_label">5</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell"><div class="dhtmlxcalendar_label">6</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell"><div class="dhtmlxcalendar_label">7</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell"><div class="dhtmlxcalendar_label">8</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_weekend"><div class="dhtmlxcalendar_label">9</div></li><li class="dhtmlxcalendar_cell dhtmlxcalendar_cell_weekend"><div class="dhtmlxcalendar_label">10</div></li></ul></div><div class="dhtmlxcalendar_time_cont" style="display: none; cursor: pointer;"></div><div id="id_32edcba8-b7fa-e910-86da-d025b4ab431e" class="dhtmlxcalendar_time_cont dhtmlxcalendar_mode_time" style="cursor: pointer;"><ul class="calendar_line common_txtbox_wrap comp_select_ctl" id="id_38bdf887-7c12-808f-b99f-e7eee127a9ae"><li id="id_acf8bbd3-ecf1-e40b-c21d-ff7970fcfe59" class="dhtmlxcalendar_cell calendar_time_hdr" autocomplete="off"><div class="calendar_time_img syIcon sy-overdue"></div><span class="calendar_label_hours">14</span><span class="dhtmlxcalendar_label_colon">:</span><span class="calendar_label_minutes">19</span><span class="dhtmlxcalendar_label_clear">undefined</span><span class="calendar_label_today">undefined</span></li></ul></div></div></div><div class="uploadFullScreenDragBGBG" style="z-index:1034"></div><div class="uploadFullScreenDragBG  " style="z-index:1035;
+							   
+							   top:187px;
+							   
+							   
+							   
+						">
+						<div>
+							<span class="syIcon sy-attachment UFSDBGshow1"></span>
+							<span class="syIcon sy-hook-plane UFSDBGshow2"></span>
+							<p class="UFSDBGshow1">将文件拖拽至此区域就可以作为附件添加，可支持一次拖拽多个文件</p>
+							<p class="UFSDBGshow2">可以松手了</p>
+						</div>
+				</div><div id="ctpUiTooltip_38935718" class="ctpUiTooltip posTop placement_topStart ctpUiTooltipDark animated fadeIn" style="position: absolute; top: 0px; left: 0px; display: none;">将文件拖拽至上传附件按钮附近上传,如果无法拖拽点击右侧帮助<div class="ctpUiTooltipArrow"></div></div><script type="text/javascript" async="" src="/seeyon/common/cap4/template/base/browse-images/jquery.touchTouch-debug.js?V=V8_2SP1_231013_1903070"></script></body></html>

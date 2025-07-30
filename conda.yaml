@@ -1,3 +1,4 @@
+name: llmrpa
 channels:
   - conda-forge
 

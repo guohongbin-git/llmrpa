@@ -1,0 +1,8 @@
+[
+    {
+        "payload": {
+            "workflow_file": "workflows/aaa.yaml"
+        },
+        "files": {}
+    }
+]

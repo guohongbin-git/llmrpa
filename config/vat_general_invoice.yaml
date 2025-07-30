@@ -1,0 +1,32 @@
+vat_invoice:
+  name: 增值税普通发票
+  description: 用于提取增值税普通发票的关键信息。
+  fields:
+    - id: invoice_number
+      label: 发票号码
+      type: string
+      required: true
+    - id: issue_date
+      label: 开票日期
+      type: date
+      required: true
+    - id: description_taxable_goods_services
+      label: 货物或应税劳务、服务名称
+      type: string
+      required: true
+    - id: seller_name
+      label: 销售方名称
+      type: string
+      required: true
+    - id: buyer_name
+      label: 购买方名称
+      type: string
+      required: true
+    - id: total_amount_net
+      label: 价税合计（小写金额）
+      type: number
+      required: true
+  llm_prompt_template: |
+    从以下发票图片和文本中提取以下信息，并以JSON格式返回：发票号码、开票日期、货物或应税劳务、服务名称、销售方名称、购买方名称、价税合计（小写金额）。
+    图片：{ image }
+    OCR文本：{ ocr_text }

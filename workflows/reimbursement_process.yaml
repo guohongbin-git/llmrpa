@@ -1,0 +1,50 @@
+
+id: reimbursement_process
+name: 智能发票报销流程
+description: 能够自动识别多种类型的发票，提取关键信息，并提交到报销系统。
+steps:
+  - name: 识别票据类型
+    action: llm_classify_document
+    params:
+      file_path: "{{ input.file_path }}"
+      prompt: "请根据以下发票的图像和文字，判断它最可能属于哪种类型？请只返回类型的ID（例如：vat_special_invoice, vehicle_invoice, train_ticket）。"
+    output_to: document_type
+    on_error: review
+
+  - name: 根据类型提取发票数据
+    action: llm_extract_document
+    params:
+      file_path: "{{ input.file_path }}"
+      config_id: "{{ document_type }}"
+    output_to: extracted_invoice_data
+    on_error: review
+
+  - name: 登录报销系统
+    action: browser_login_human_like # Assuming the reimbursement system also needs advanced login
+    params:
+      url: "http://127.0.0.1:5001/" # Placeholder URL for the reimbursement system
+      username: "user"
+      password: "password"
+      username_selector: "#username" # Placeholder selector
+      login_button_selector: "button[type=submit]" # Placeholder selector
+
+  - name: 填写报销表单
+    action: browser_fill_form
+    params:
+      form_selector: "#reimbursement-form" # Placeholder selector
+      data:
+        invoice_number: "{{ extracted_invoice_data.invoice_number }}"
+        amount: "{{ extracted_invoice_data.amount }}"
+        date: "{{ extracted_invoice_data.date }}"
+        # Add other fields from your invoice configs as needed
+
+  - name: 提交报销
+    action: browser_click
+    params:
+      selector: "button:text('Submit Claim')" # Placeholder selector
+
+  - name: 验证提交结果
+    action: browser_extract
+    params:
+      selector: ".alert-success" # Placeholder selector
+    output_to: submission_message

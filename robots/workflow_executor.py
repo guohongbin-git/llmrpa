@@ -10,7 +10,8 @@ from robocorp.workitems import inputs, outputs
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, project_root)
 
-from src.ai_services import extract_document_data
+# 导入新的AI服务函数
+from src.ai_services import process_receipts_and_fill_excel
 
 # Configure basic logging
 logging.basicConfig(level=logging.INFO)
@@ -28,119 +29,63 @@ class WorkflowExecutor:
     def _resolve_variable(self, value):
         if isinstance(value, str) and value.startswith("{{") and value.endswith("}}"):
             var_name = value[2:-2].strip()
-            # Split to access nested keys, e.g., {{input.file_path}}
             keys = var_name.split('.')
             val = self.vars
             for key in keys:
-                val = val.get(key)
+                if isinstance(val, dict):
+                    val = val.get(key)
+                elif isinstance(val, list) and key.isdigit(): # Allow list indexing
+                    try:
+                        val = val[int(key)]
+                    except (IndexError, ValueError):
+                        return value # Return original template if not found
+                else:
+                    return value # Cannot resolve further
                 if val is None:
                     return value # Return original template if not found
             return val
         return value
 
-    def _convert_uivision_target_to_playwright_selector(self, target):
-        """Converts UI.Vision target format to Playwright selector."""
-        if target.startswith("id="):
-            return f"#{target[3:]}"
-        elif target.startswith("name="):
-            return f"[name='{target[5:]}']"
-        elif target.startswith("xpath="):
-            return target # Playwright supports xpath directly
-        elif target.startswith("linkText="):
-            return f"text='{target[9:]}'"
-        elif target.startswith("css="):
-            return target[4:] # Playwright supports css directly
-        # Add more conversions as needed
-        return target # Return as is if no specific conversion rule matches
-
-    def _take_error_screenshot(self, step_name: str):
-        """Takes a screenshot on error, saving it to a dedicated folder with a timestamp."""
-        try:
-            import time
-            screenshot_dir = os.path.join(os.getcwd(), 'output', 'screenshots')
-            os.makedirs(screenshot_dir, exist_ok=True)
-            
-            safe_step_name = "".join(c if c.isalnum() or c in (' ', '_') else '_' for c in step_name).replace(' ', '_')
-            timestamp = int(time.time())
-            filename = f"error_{safe_step_name}_{timestamp}.png"
-            error_screenshot_path = os.path.join(screenshot_dir, filename)
-
-            target_page = None
-            if hasattr(self.current_context, 'page'):  # Frame context
-                target_page = self.current_context.page
-            else:  # Assume Page context
-                target_page = self.current_context
-
-            if target_page and not target_page.is_closed():
-                target_page.screenshot(path=error_screenshot_path)
-                logging.info(f"Saved error screenshot to: {error_screenshot_path}")
-            else:
-                logging.warning("Could not take screenshot, target page is invalid or closed.")
-        except Exception as e:
-            logging.error(f"An unexpected error occurred while taking a screenshot: {e}")
-
-    def _proactively_save_source(self, event_name: str):
-        """Saves the HTML source of the current context to a dedicated folder with a timestamp."""
-        try:
-            import time
-            source_dir = os.path.join(os.getcwd(), 'output', 'sources')
-            os.makedirs(source_dir, exist_ok=True)
-
-            safe_event_name = "".join(c if c.isalnum() or c in (' ', '_') else '_' for c in event_name).replace(' ', '_')
-            timestamp = int(time.time())
-            filename = f"source_after_{safe_event_name}_{timestamp}.html"
-            source_file_path = os.path.join(source_dir, filename)
-
-            if self.current_context:
-                with open(source_file_path, 'w', encoding='utf-8') as f:
-                    f.write(self.current_context.content())
-                logging.info(f"Proactively saved source code to: {source_file_path}")
-        except Exception as e:
-            logging.warning(f"Could not proactively save source code for event '{event_name}': {e}")
-
-    def execute(self, initial_input=None):
-        logging.info(f"Starting workflow: {self.workflow.get('name', 'Unnamed Workflow')}")
-        self.vars['input'] = initial_input if initial_input is not None else {}
-
-        if not browser.page():
-            browser.goto("about:blank")
-        self.current_context = browser.page()
-
-        for step in self.workflow.get('steps', []):
+    def _execute_steps(self, steps):
+        """递归执行步骤列表，用于支持循环等控制结构"""
+        for step in steps:
             action = step.get('action') or step.get('type')
             step_name = step.get('name', f"Unnamed Step ({action})")
             output_to = step.get('output_to')
 
-            action_map = {
-                'input': 'browser_fill',
-                'click': 'browser_click',
-                'keydown': 'browser_press',
-                'select': 'browser_select_option'
-            }
-            if action in action_map:
-                action = action_map[action]
-
-            params = step.get('params', {})
-            
-            for k, v in params.items():
-                params[k] = self._resolve_variable(v)
-            
-            step_copy = {k: self._resolve_variable(v) for k, v in step.items()}
-
-            selector = params.get('selector') or step_copy.get('selector')
-            value = params.get('value') or step_copy.get('value')
-            key = params.get('key') or step_copy.get('key')
-            
-            if 'target' in params or 'target' in step_copy:
-                target = params.get('target') or step_copy.get('target')
-                selector = self._convert_uivision_target_to_playwright_selector(target)
+            params = {k: self._resolve_variable(v) for k, v in step.get('params', {}).items()}
 
             logging.info(f"Executing step '{step_name}' with action '{action}'")
 
             try:
                 result = None
-                if action == 'browser_goto':
-                    url = params.get('url') or step_copy.get('url')
+                if action == 'loop':
+                    source_list_name = params.get('source_list')
+                    loop_variable_name = params.get('loop_variable')
+                    loop_steps = step.get('steps') # Loop steps are nested under 'steps' key
+
+                    if not all([source_list_name, loop_variable_name, loop_steps]):
+                        raise ValueError("Loop action requires 'source_list', 'loop_variable', and 'steps'.")
+
+                    source_list = self.vars.get(source_list_name, [])
+                    for item in source_list:
+                        self.vars[loop_variable_name] = item
+                        self._execute_steps(loop_steps)
+
+                elif action == 'ai_fill_reimbursement_excel':
+                    receipt_files = params.get('receipt_files')
+                    excel_template_path = params.get('excel_template_path')
+
+                    if not receipt_files or not excel_template_path:
+                        raise ValueError("ai_fill_reimbursement_excel requires 'receipt_files' and 'excel_template_path'.")
+                    
+                    # Call the AI service to process receipts and fill the Excel
+                    reimbursement_package = process_receipts_and_fill_excel(receipt_files, excel_template_path)
+                    result = reimbursement_package
+
+                # --- All other browser actions and existing actions --- 
+                elif action == 'browser_goto':
+                    url = params.get('url')
                     if url:
                         browser.goto(url)
                         self.current_context = browser.page()
@@ -224,7 +169,7 @@ class WorkflowExecutor:
 
                 elif action == 'browser_click':
                     if selector:
-                        opens_new_window = params.get('opens_new_window', False) or step_copy.get('opens_new_window', False)
+                        opens_new_window = params.get('opens_new_window', False) #or step_copy.get('opens_new_window', False)
                         if opens_new_window:
                             logging.info(f"Expecting new window after clicking {selector}")
                             new_page = None
@@ -260,7 +205,7 @@ class WorkflowExecutor:
                         raise ValueError("Missing 'selector' for browser_click.")
                 
                 elif action == 'browser_press':
-                    if selector and key:
+                    if key:
                         self.current_context.press(selector, key)
                     else:
                         raise ValueError("Missing 'selector' or 'key' for browser_press.")
@@ -272,7 +217,7 @@ class WorkflowExecutor:
                         raise ValueError("Missing 'selector' or 'value' for browser_select_option.")
 
                 elif action == 'browser_switch_to_frame':
-                    frame_selector = params.get('selector') or step_copy.get('selector')
+                    frame_selector = params.get('selector')
                     if frame_selector == '__main_page__':
                         if hasattr(self.current_context, 'page'):  # Check if we are inside a frame
                             self.current_context = self.current_context.page # Correctly exit to the containing page
@@ -298,16 +243,12 @@ class WorkflowExecutor:
                     else:
                         raise ValueError("Missing 'selector' for browser_switch_to_frame.")
                 
-                elif action == 'extract_data':
-                    input_filename = self.vars.get('input', {}).get('input_file_name')
-                    if input_filename:
-                        file_path = inputs.current.get_file(input_filename)
-                        result = extract_document_data(file_path)
-                    else:
-                        raise ValueError("Input filename not found in payload for data extraction.")
+                elif action == 'extract_data': # This action is now deprecated in favor of ai_fill_reimbursement_excel
+                    raise NotImplementedError("'extract_data' is deprecated. Use 'ai_fill_reimbursement_excel' instead.")
+
                 elif action == 'browser_wait_for_selector':
-                    timeout = params.get('timeout') or step_copy.get('timeout')
-                    state = params.get('state') or step_copy.get('state')
+                    timeout = params.get('timeout')
+                    state = params.get('state')
                     self.current_context.wait_for_selector(selector, timeout=timeout if timeout is not None else 30000, state=state if state is not None else 'visible')
                 elif action == 'browser_mouse_move':
                     x = params.get('x')
@@ -318,16 +259,17 @@ class WorkflowExecutor:
                     else:
                         raise ValueError("Missing 'x' or 'y' for browser_mouse_move.")
                 elif action == 'browser_get_source':
-                    output_file = params.get('output_file') or step_copy.get('output_file', 'page_source.html')
+                    output_file = params.get('output_file')
                     source_dir = os.path.join(os.getcwd(), 'output', 'sources')
                     os.makedirs(source_dir, exist_ok=True)
+                    import time
                     timestamp = int(time.time())
                     # insert timestamp before the extension
                     base, ext = os.path.splitext(output_file)
                     filename = f"{base}_{timestamp}{ext}"
                     final_path = os.path.join(source_dir, filename)
 
-                    source_code = self.current_context.content()
+                    source_code = self.current_context.content())
                     with open(final_path, 'w', encoding='utf-8') as f:
                         f.write(source_code)
                     logging.info(f"Saved source code to: {final_path}")
@@ -335,7 +277,7 @@ class WorkflowExecutor:
 
                 elif action == 'browser_screenshot':
                     import time
-                    output_file = params.get('output_file') or step_copy.get('output_file', 'screenshot.png')
+                    output_file = params.get('output_file')
                     screenshot_dir = os.path.join(os.getcwd(), 'output', 'screenshots')
                     os.makedirs(screenshot_dir, exist_ok=True)
                     timestamp = int(time.time())
@@ -356,15 +298,15 @@ class WorkflowExecutor:
                     else:
                         raise Exception(f"Could not take screenshot, target page for context is invalid or closed.")
                 elif action == 'browser_wait_for_url':
-                    url_pattern = params.get('url_pattern') or step_copy.get('url_pattern')
-                    timeout = params.get('timeout') or step_copy.get('timeout')
+                    url_pattern = params.get('url_pattern')
+                    timeout = params.get('timeout')
                     self.current_context.wait_for_url(url_pattern, timeout=timeout if timeout is not None else 30000)
                 elif action == 'browser_wait_for_load_state':
-                    state = params.get('state') or step_copy.get('state')
-                    timeout = params.get('timeout') or step_copy.get('timeout')
+                    state = params.get('state')
+                    timeout = params.get('timeout')
                     self.current_context.wait_for_load_state(state if state is not None else 'domcontentloaded', timeout=timeout if timeout is not None else 30000)
                 elif action == 'browser_evaluate':
-                    expression = params.get('expression') or step_copy.get('expression')
+                    expression = params.get('expression')
                     result = self.current_context.evaluate(expression)
                 elif action == 'browser_js_click':
                     if selector:
@@ -372,9 +314,9 @@ class WorkflowExecutor:
                         self.current_context.evaluate(script)
                         logging.info(f"Clicked {selector} using JavaScript.")
                 elif action == 'browser_wait_for_response':
-                    url_pattern = params.get('url_pattern') or step_copy.get('url_pattern')
-                    timeout = params.get('timeout') or step_copy.get('timeout')
-                    output_file = params.get('output_file') or step_copy.get('output_file', 'response.json')
+                    url_pattern = params.get('url_pattern')
+                    timeout = params.get('timeout')
+                    output_file = params.get('output_file')
                     response_data = None
                     def match_url_pattern(url, pattern):
                         import re
@@ -442,20 +384,74 @@ class WorkflowExecutor:
                     logging.info(f"Stored result in variable: {output_to}")
 
             except Exception as e:
-                if not (action == 'browser_click' and (params.get('opens_new_window', False) or step_copy.get('opens_new_window', False))):
+                if not (action == 'browser_click' and (params.get('opens_new_window', False) or step.get('opens_new_window', False))):
                     logging.error(f"Error in step '{step_name}' (Action: {action}): {e}")
                     self._take_error_screenshot(step_name)
                 
                 inputs.current.fail(exception_type="APPLICATION", code="STEP_ERROR", message=str(e))
                 raise
 
+    def execute(self, initial_input=None):
+        logging.info(f"Starting workflow: {self.workflow.get('name', 'Unnamed Workflow')}")
+        self.vars['input'] = initial_input if initial_input is not None else {}
+
+        if not browser.page():
+            browser.goto("about:blank")
+        self.current_context = browser.page()
+
+        self._execute_steps(self.workflow.get('steps', []))
+
         logging.info(f"Workflow '{self.workflow.get('name')}' completed successfully.")
-        # When running locally without creating an output work item, `outputs.current` may not exist.
         if hasattr(outputs, 'current') and outputs.current:
             outputs.current.payload['final_variables'] = self.vars
             logging.info("Saved final variables to output work item.")
         else:
-            logging.info("No output work item available, skipping saving of final variables. This is normal for local runs.")
+            logging.info("No output work item available, skipping saving of final variables.")
+
+    def _take_error_screenshot(self, step_name: str):
+        """Takes a screenshot on error, saving it to a dedicated folder with a timestamp."""
+        try:
+            import time
+            screenshot_dir = os.path.join(os.getcwd(), 'output', 'screenshots')
+            os.makedirs(screenshot_dir, exist_ok=True)
+            
+            safe_step_name = "".join(c if c.isalnum() or c in (' ', '_') else '_' for c in step_name).replace(' ', '_')
+            timestamp = int(time.time())
+            filename = f"error_{safe_step_name}_{timestamp}.png"
+            error_screenshot_path = os.path.join(screenshot_dir, filename)
+
+            target_page = None
+            if hasattr(self.current_context, 'page'):  # Frame context
+                target_page = self.current_context.page
+            else:  # Assume Page context
+                target_page = self.current_context
+
+            if target_page and not target_page.is_closed():
+                target_page.screenshot(path=error_screenshot_path)
+                logging.info(f"Saved error screenshot to: {error_screenshot_path}")
+            else:
+                logging.warning("Could not take screenshot, target page is invalid or closed.")
+        except Exception as e:
+            logging.error(f"An unexpected error occurred while taking a screenshot: {e}")
+
+    def _proactively_save_source(self, event_name: str):
+        """Saves the HTML source of the current context to a dedicated folder with a timestamp."""
+        try:
+            import time
+            source_dir = os.path.join(os.getcwd(), 'output', 'sources')
+            os.makedirs(source_dir, exist_ok=True)
+
+            safe_event_name = "".join(c if c.isalnum() or c in (' ', '_') else '_' for c in event_name).replace(' ', '_')
+            timestamp = int(time.time())
+            filename = f"source_after_{safe_event_name}_{timestamp}.html"
+            source_file_path = os.path.join(source_dir, filename)
+
+            if self.current_context:
+                with open(source_file_path, 'w', encoding='utf-8') as f:
+                    f.write(self.current_context.content())
+                logging.info(f"Proactively saved source code to: {source_file_path}")
+        except Exception as e:
+            logging.warning(f"Could not proactively save source code for event '{event_name}': {e}")
 
 @task
 def run_workflow():

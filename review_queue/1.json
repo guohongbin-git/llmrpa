@@ -1,0 +1,11 @@
+{
+    "id": "1",
+    "payload": {
+        "file_path": "devdata/non_existent_invoice.pdf"
+    },
+    "exception": {
+        "type": "APPLICATION",
+        "code": "RPA_AUTOMATION_ERROR",
+        "message": "File not found at path: devdata/non_existent_invoice.pdf"
+    }
+}

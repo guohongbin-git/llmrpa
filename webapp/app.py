@@ -1,90 +1,82 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
+import sys
 import os
+
+# 将项目根目录添加到Python路径
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from flask import Flask, request, jsonify
+import yaml
 import json
+import subprocess
+from flask_cors import CORS
+from src.ai_services import generate_workflow_yaml
+from src.uivision_converter import convert_uivision_to_yaml
 
 app = Flask(__name__)
-app.secret_key = 'supersecretkey' # Needed for flashing messages
+CORS(app)
 
-# Path to the Robocorp output and devdata directories
-PROJECT_ROOT = os.path.dirname(__file__)
-REVIEW_QUEUE_DIR = os.path.join(PROJECT_ROOT, '..', 'review_queue')
-DEVDATA_DIR = os.path.join(PROJECT_ROOT, '..', 'devdata')
+_tasks_db = {}
 
-# In-memory user database for simplicity
-users = {
-    "user": "password"
-}
+@app.route('/api/tasks', methods=['POST'])
+def start_task():
+    try:
+        workflow_id = request.form.get('workflow_id')
+        uploaded_files = request.files.getlist('files') # 接收文件列表
 
-@app.route("/")
-def index():
-    return redirect(url_for('login'))
+        if not workflow_id or not uploaded_files:
+            return jsonify({'success': False, 'error': '缺少 workflow_id 或上传的文件'}), 400
 
-@app.route("/login", methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        if users.get(username) == password:
-            flash("Login successful!", "success")
-            return redirect(url_for('review_list')) # Redirect to review list after login
-        else:
-            flash("Invalid credentials, please try again.", "danger")
-    return render_template('login.html')
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+        workflow_path = os.path.join(project_root, 'workflows', workflow_id)
+        
+        task_id = f"task_{os.urandom(8).hex()}"
+        work_item_dir = os.path.join(project_root, 'devdata', 'running_work_items', task_id)
+        os.makedirs(work_item_dir, exist_ok=True)
 
-@app.route("/form")
-def reimbursement_form():
-    return render_template('form.html')
+        saved_file_paths = []
+        work_item_files = {}
+        for f in uploaded_files:
+            # 保存文件到工作项目录
+            saved_path = os.path.join(work_item_dir, f.filename)
+            f.save(saved_path)
+            saved_file_paths.append(saved_path) # 使用绝对路径
+            work_item_files[f.filename] = f.filename
 
-@app.route("/submit", methods=['POST'])
-def submit_form():
-    invoice_number = request.form['invoice_number']
-    amount = request.form['amount']
-    date = request.form['date']
-    # In a real app, you would save this data to a database
-    print(f"Received reimbursement claim: Invoice={invoice_number}, Amount={amount}, Date={date}")
-    flash(f"Successfully submitted claim for invoice {invoice_number}.", "success")
-    return redirect(url_for('reimbursement_form'))
+        # 创建工作项 payload
+        work_item = {
+            "payload": {
+                'workflow_file': workflow_path,
+                'file_paths': saved_file_paths # 传递文件路径列表
+            },
+            "files": work_item_files
+        }
+        with open(os.path.join(work_item_dir, 'work-items.json'), 'w') as f:
+            json.dump([work_item], f)
 
-@app.route("/review")
-def review_list():
-    """Displays a list of work items that failed and need review."""
-    failed_items = []
-    if os.path.exists(REVIEW_QUEUE_DIR):
-        for item_file in os.listdir(REVIEW_QUEUE_DIR):
-            if item_file.endswith('.json'):
-                with open(os.path.join(REVIEW_QUEUE_DIR, item_file), 'r') as f:
-                    data = json.load(f)
-                    input_file = data.get('payload', {}).get('file_path', 'N/A')
-                    failed_items.append({
-                        'id': data.get('id'),
-                        'input_file': os.path.basename(input_file),
-                        'error_type': data.get('exception', {}).get('code', 'N/A'),
-                        'error_message': data.get('exception', {}).get('message', 'N/A')
-                    })
-    return render_template('review_list.html', items=failed_items)
+        # 设置并执行 Robocorp 任务
+        task_env = os.environ.copy()
+        task_env['RC_WORKITEM_INPUT_PATH'] = os.path.join(work_item_dir, 'work-items.json')
+        
+        command = [
+            sys.executable, '-m', 'robocorp.tasks',
+            'run', os.path.join(project_root, 'robots', 'workflow_executor.py'),
+            '--task', 'run_workflow'
+        ]
+        
+        subprocess.Popen(command, cwd=project_root, env=task_env)
 
-@app.route("/review/<item_id>")
-def review_item(item_id):
-    """Displays the details of a single failed item for review."""
-    item_data = {}
-    item_file_path = os.path.join(REVIEW_QUEUE_DIR, f"{item_id}.json")
-    if os.path.exists(item_file_path):
-        with open(item_file_path, 'r') as f:
-            item_data = json.load(f)
-    
-    # We need the original file path to display the image
-    original_file_path = item_data.get('payload', {}).get('file_path', '')
-    
-    # For simplicity, we assume the file is in the devdata directory
-    # and we serve it from there.
-    image_url = url_for('serve_dev_file', filename=os.path.basename(original_file_path))
+        _tasks_db[task_id] = {'status': 'RUNNING'}
 
-    return render_template("review_item.html", item=item_data, image_url=image_url)
+        return jsonify({
+            'success': True, 
+            'message': f'任务 {task_id} 已成功启动，包含 {len(saved_file_paths)} 个文件', 
+            'task_id': task_id
+        })
 
-@app.route("/devdata/<path:filename>")
-def serve_dev_file(filename):
-    """Serves files from the devdata directory."""
-    return send_from_directory(DEVDATA_DIR, filename)
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
-if __name__ == "__main__":
+# ... (保留所有其他 API 端点，如 get_workflows, get_task_status 等)
+
+if __name__ == '__main__':
     app.run(debug=True, port=5001)

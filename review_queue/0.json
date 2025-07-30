@@ -1,11 +1,11 @@
 {
     "id": "0",
     "payload": {
-        "file_path": "devdata/non_existent_invoice.pdf"
+        "file_path": "/Users/guohongbin/projects/llmrpa/devdata/uploads/\u5317\u4eac\u68f1\u955c\u6781\u667a\u80fd\u79d1\u6280\u80a1\u4efd\u6709\u9650\u516c\u53f8-20250530-\u53d1\u7968\u53f725942000000022966733-1156.00\u5143-\u53a6\u95e8\u4e07\u6708\u4e30\u5b9e\u4e1a\u6709\u9650\u516c\u53f8.pdf"
     },
     "exception": {
         "type": "APPLICATION",
         "code": "RPA_AUTOMATION_ERROR",
-        "message": "Unable to get page count.\nI/O Error: Couldn't open file 'devdata/non_existent_invoice.pdf': No such file or directory.\n"
+        "message": "Page.screenshot() got an unexpected keyword argument 'output_dir'"
     }
 }

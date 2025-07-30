@@ -1,0 +1,24 @@
+taxi_receipt:
+  name: 打车行程单
+  description: 用于提取打车行程单的关键信息。
+  fields:
+    - id: start_date
+      label: 起止日期（起点）
+      type: date
+      required: true
+    - id: end_date
+      label: 起止日期（终点）
+      type: date
+      required: true
+    - id: total_amount
+      label: 合计金额
+      type: number
+      required: true
+    - id: city
+      label: 城市
+      type: string
+      required: true
+  llm_prompt_template: |
+    从以下打车行程单图片和文本中提取以下信息，并以JSON格式返回：起止日期（起点）、起止日期（终点）、合计金额、城市。
+    图片：{ image }
+    OCR文本：{ ocr_text }

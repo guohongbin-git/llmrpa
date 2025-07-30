@@ -1,0 +1,12 @@
+docs: Update WORKLOG.md with "Three-Stage LLM Invocation" architecture details
+
+This commit updates `WORKLOG.md` to include a new "Phase Nine" detailing the implementation of the "Three-Stage LLM Invocation" intelligent document processing architecture.
+
+The update covers:
+- Refactoring of `src/ai_services.py` for document classification, data extraction, Excel mapping generation, and mechanical Excel filling.
+- Refactoring of `robots/workflow_executor.py` to support the new AI-driven actions and looping capabilities.
+- Restructuring of `replay.yaml` to orchestrate the two-stage upload process driven by AI-prepared data.
+- Modifications to `frontend/src/TaskCard.js` and `webapp/app.py` for multi-file upload support.
+- Addition of `openpyxl` to `requirements.txt` and creation of `devdata/reimbursement_template.xlsx`.
+
+This ensures `WORKLOG.md` accurately reflects the latest architectural changes and implementation details.

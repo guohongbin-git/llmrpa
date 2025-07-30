@@ -1,0 +1,77 @@
+name: oa
+steps:
+  - action: open
+    target: 'https://oa.topprismdata.com/seeyon/main.do'
+  - action: type
+    target: 'id=login_username'
+    value: 'guohb@topprism.com'
+  - action: type
+    target: 'id=login_password1'
+    value: 'LJSJ@123456'
+  - action: browser_screenshot
+    output_file: 'output/screenshot_before_login_click.png'
+  - action: browser_js_click
+    target: 'id=submit_button'
+  - action: click
+    target: 'linkText=LJCW04-差旅费报销单'
+  - action: selectWindow
+    target: 'title=新建页面'
+  - action: selectFrame
+    target: 'id=zwIframe'
+  - action: click
+    target: 'xpath=//*[@id="field0034_id"]/div/div[2]/div/div/div/div/i'
+  - action: click
+    target: 'xpath=/html/body/div[4]/div/div/div[2]/div/div/div/div'
+  - action: click
+    target: 'xpath=//*[@id="field0042_btn"]/i'
+  - action: click
+    target: 'xpath=/html/body/div[4]/table/tbody/tr[5]/td[2]'
+  - action: click
+    target: 'xpath=/html/body/div[4]/table/tfoot/tr/td/table/tbody/tr/td[2]/span'
+  - action: click
+    target: 'xpath=//*[@id="field0006_id"]/section/div[2]/div/input'
+  - action: click
+    target: 'xpath=//*[@id="field0006_id"]/section/div[2]/div/input'
+  - action: type
+    target: 'xpath=//*[@id="field0006_id"]/section/div[2]/div/input'
+    value: '对的'
+  - action: click
+    target: 'xpath=//*[@id="tableName-front_formson_1"]/div/div/div[2]/div[5]/div/span[2]'
+  - action: selectFrame
+    target: 'relative=top'
+  - action: selectFrame
+    target: 'id=layui-layer-iframe1'
+  - action: click
+    target: 'xpath=//*[@id="app"]/div[2]/div/div/button/span'
+  - action: selectFrame
+    target: 'relative=top'
+  - action: selectFrame
+    target: 'id=layui-layer-iframe2'
+  - action: click
+    target: 'id=file1'
+  - action: type
+    target: 'id=file1'
+    value: 'C:\fakepath\报销明细 (1).xlsx'
+  - action: selectFrame
+    target: 'relative=top'
+  - action: click
+    target: 'linkText=下一步'
+  - action: click
+    target: 'linkText=确定'
+  - action: selectFrame
+    target: 'id=zwIframe'
+  - action: click
+    target: 'xpath=//*[@id="field0017_id"]/section/div[2]/div/div[2]/div'
+  - action: selectFrame
+    target: 'relative=top'
+  - action: selectFrame
+    target: 'id=layui-layer-iframe3'
+  - action: click
+    target: 'id=file1'
+  - action: type
+    target: 'id=file1'
+    value: 'C:\fakepath\北京棱镜极智能科技股份有限公司-20250530-发票号25942000000022966733-1156.00元-厦门万月丰实业有限公司.pdf'
+  - action: selectFrame
+    target: 'relative=top'
+  - action: click
+    target: 'id=saveDraft_span'

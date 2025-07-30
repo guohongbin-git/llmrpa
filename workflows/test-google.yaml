@@ -1,0 +1,7 @@
+name: Open Google Test
+description: A simple workflow to test if the RPA execution is working.
+steps:
+  - name: Go to Google
+    action: browser_goto
+    params:
+      url: https://www.google.com

@@ -1,0 +1,1538 @@
+WARNING:robocorp.workitems._adapters:Access to work items is only available from inside Control Room.
+Using development-time simulated work items.
+
+To learn more, see this guide: https://github.com/robocorp/robocorp/blob/master/workitems/docs/guides/local-development.md#using-a-custom-editor
+To suppress this message, set the environment variable `RC_WORKITEM_ADAPTER`.
+
+INFO:root:WorkflowExecutor.execute: Running updated code.
+INFO:root:Starting workflow: 登录OA并点击差旅费报销单链接
+INFO:root:Executing step '登录OA系统' with action 'browser_login'
+127.0.0.1 - - [25/Jul/2025 15:19:28] "GET /api/tasks/991a8724-dc7f-49ac-ac3a-f933775c5de8 HTTP/1.1" 200 -
+127.0.0.1 - - [25/Jul/2025 15:19:31] "GET /api/tasks/undefined HTTP/1.1" 404 -
+INFO:root:Executing step '点击差旅费报销单链接' with action 'browser_click'
+INFO:root:Page content before clicking a:has-text('LJCW04-差旅费报销单'):
+<!DOCTYPE html><html class="h100b overflow_login"><head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="renderer" content="webkit|ie-stand|ie-comp">
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="Cache-Control" content="no-store, must-revalidate">
+<meta http-equiv="expires" content="0">
+<title>棱镜极智能 OA管理系统 V8.2SP1</title>
+<link rel="stylesheet" href="/seeyon/common/all-min.css?V=V8_2SP1_231013_1903070">
+<link rel="stylesheet" href="/seeyon/skin/dist/components/components_layout.css?V=V8_2SP1_231013_1903070">
+<link rel="stylesheet" href="/seeyon/skin/dist/components/components_theme_default.css?V=V8_2SP1_231013_1903070">
+<script type="text/javascript">
+        var CSRFTOKEN = 'null';
+        var _ctxPath = '/seeyon', _ctxServer = 'http://oa.topprismdata.com:80/seeyon';
+        var _locale = 'zh_CN',_isDevelop = false,_sessionid = '',_isModalDialog = false;
+        var _editionI18nSuffix = '';
+
+        var _resourceCode = "";
+        var seeyonProductId="1";
+    </script>
+<script type="text/javascript" src="/seeyon/common/all-min.js"></script>
+<script type="text/javascript" src="/seeyon/ajaxStub.js?v=1747196987047"></script>
+<link href="/seeyon/common/images/A8/favicon.ico" type="image/x-icon" rel="icon">
+<script type="text/javascript" src="/seeyon/common/js/crypto.js?V=V8_2SP1_231013_1903070"></script>
+<script type="text/javascript" src="/seeyon/main/common/js/jquery.qrcode.min.js?V=V8_2SP1_231013_1903070"></script>
+<script type="text/javascript">
+
+        var loginFrom= '';
+        var intervalQrcode = null;
+        var sendFlag = false;
+
+        var _SecuritySeed = '1669205723';
+        var _SecuritySeedTimeOut='3600';
+
+        var adjustMarginTop;
+        var isIE8 = (navigator.userAgent.indexOf("MSIE") >= 0 || navigator.userAgent.indexOf("Trident") >= 0) &&  /msie 8\.0/i.test(navigator.userAgent) || (navigator.userAgent.indexOf("MSIE") >= 0 || navigator.userAgent.indexOf("Trident") >= 0) && /msie 7\.0/i.test(navigator.userAgent);
+
+        // var ajaxQrCodeLoginManager = new qrCodeLoginManager();
+        function loginForWechat(){
+                var random = $("#random").val();
+                // ajaxQrCodeLoginManager.isLogin(random,{
+                //      success : function(data) {
+                //              if(data != "loginError" || data == null){
+                //                      $("#login_username").val(data);
+                //                      $("#login_button").click();
+                //              } else {
+                //                      sendFlag = true;
+                //              }
+                //      }
+                // });
+        $.ajax({
+            async : true,
+            type: "GET",
+            url: _ctxPath+"/main.do?method=login4QrCode&random=" + random,
+            dataType : 'text',
+            success : function(data) {
+                if(data != "loginError" || data == null){
+                    $("#login_username").val(data);
+                    $("#login_button").click();
+                } else {
+                    sendFlag = true;
+                }
+            },
+            error : function(XMLHttpRequest, textStatus, errorThrown) {
+                alert($.i18n('login.tip.failure'));
+            }
+        });
+        }
+
+        //轮询请求，防止后台阻塞
+        function intervalLogin(){
+                if(sendFlag){
+                        sendFlag = false;
+                        loginForWechat();
+                }
+        }
+
+        //二维码登陆
+        function changeLoginMode (_layout) {
+                var adjustWidth = 171;
+                var adjustHeight = 171;
+                $(".qrCodeBtn,.qrcodeAreaLogin").click(function () {
+                        showQrcodeArea();
+                        var date = new Date();
+                        var dateNumber = date.getTime();
+                        var random="seeyon-" + Math.uuid() + "-" + dateNumber;
+                        var qrcodeRandom = "https://weixin.seeyon.com/mobilehelp.jsp?random=" + random;
+                        $("#random").val(random);
+                        //canvas方式进行图片渲染
+                        $("#qrcode1 .qrcode").empty();
+                $("#qrcode1 .qrcode").qrcode({
+                    render: isIE8?"table":"canvas", //canvas方式
+                    width: adjustWidth, //宽度
+                    height: adjustHeight, //高度
+                    text: utf16to8(qrcodeRandom) //任意内容
+                });
+                var qrCodeRandom4Corp = wechatCorpUrl+"&random="+random;
+                        $("#qrcode5 .qrcode").empty();
+                $("#qrcode5 .qrcode").qrcode({
+                    render: isIE8?"table":"canvas", //canvas方式
+                    width: adjustWidth, //宽度
+                    height: adjustHeight, //高度
+                    text: utf16to8(qrCodeRandom4Corp) //任意内容
+                });
+                        loginForWechat();
+                        intervalQrcode = setInterval("intervalLogin()", 1000);
+
+                });
+                $("#flashQrcode").click(function(){
+                        $("#qrcode1 .qrcode").empty();
+                        var date = new Date();
+                        var dateNumber = date.getTime();
+                        var random="seeyon-" + Math.uuid() + "-" + dateNumber;
+                        var qrcodeRandom = "https://weixin.seeyon.com/mobilehelp.jsp?random=" + random;
+                        $("#random").val(random);
+                        //canvas方式进行图片渲染
+            $("#qrcode1 .qrcode").qrcode({
+                render: isIE8?"table":"canvas", //canvas方式
+                width: adjustWidth, //宽度
+                height: adjustHeight, //高度
+                text: utf16to8(qrcodeRandom) //任意内容
+            });
+            var qrCodeRandom4Corp = wechatCorpUrl+"&random="+random;
+                        $("#qrcode5 .qrcode").empty();
+                $("#qrcode5 .qrcode").qrcode({
+                    render: isIE8?"table":"canvas", //canvas方式
+                    width: adjustWidth, //宽度
+                    height: adjustHeight, //高度
+                    text: utf16to8(qrCodeRandom4Corp) //任意内容
+                });
+            
+                });
+        }
+
+        /**
+     * js控制登录页面手机盾二维码样式的显隐，和js文件的加载
+     */
+    function changeCssAndLoadJsByTrustdo() {
+                var qrcode4Div = document.getElementById("qrcode4");
+                qrcode4Div.style.display = "block";
+                //2.动态加载js文件,并执行脚本
+                getLoginQRCodeForMobileShield();
+    }
+
+        //识别中文，暂时未用，目前随机数不包含中文
+        function utf16to8(str) {
+        var out, i, len, c;
+        out = "";
+        len = str.length;
+        for (i = 0; i < len; i++) {
+            c = str.charCodeAt(i);
+            if ((c >= 0x0001) && (c <= 0x007F)) {
+                out += str.charAt(i);
+            } else if (c > 0x07FF) {
+                out += String.fromCharCode(0xE0 | ((c >> 12) & 0x0F));
+                out += String.fromCharCode(0x80 | ((c >> 6) & 0x3F));
+                out += String.fromCharCode(0x80 | ((c >> 0) & 0x3F));
+            } else {
+                out += String.fromCharCode(0xC0 | ((c >> 6) & 0x1F));
+                out += String.fromCharCode(0x80 | ((c >> 0) & 0x3F));
+            }
+        }
+        return out;
+    }
+
+        //NC Portal
+        try{
+                if(parent.frame_A8){
+                        if("false" == "true"){
+                           var ncPortalUrl = "";
+                           var ncUrl= "";
+                           if(ncPortalUrl!=null&&ncPortalUrl!=''){
+                              window.location.href = ncPortalUrl+"/portal/logoutA8.jsp";
+                           }else{
+                             window.location.href = ncUrl+"/portal/logoutA8.jsp";
+                           }
+                        }
+                }
+        }catch(e){}
+        function onLoginSubmit(){
+                //登陆请求发出后，按钮置灰
+              $("#login_button").attr("disabled","disabled");
+              //var _bodyWidth = document.documentElement.clientWidth;
+              //var _bodyHeight = document.documentElement.clientHeight;
+              var _screenWidth = window.screen.width;
+              var _screenHeight = window.screen.height;
+              var font_size = 12;
+
+              /*if(_bodyWidth <= 1024){
+                  font_size = 12;
+              }else if(_bodyWidth <= 1600){
+                  font_size = 14;
+              }else if(_bodyWidth <= 2500){
+                  font_size = 16;
+              }else{
+                  font_size = 18;
+              }*/
+
+              $("#login_form").append("<input type='hidden' name='fontSize' value='"+font_size+"' />").append("<input type='hidden' name='screenWidth' value='"+_screenWidth+"' />").append("<input type='hidden' name='screenHeight' value='"+_screenHeight+"' />");
+                //   var encrypted = "";
+              
+              if($("#login_password1").val() != "") {
+                      var us = CryptoJS.enc.Utf8.parse($("#login_password1").val());
+                      var encrypted = CryptoJS.DES.encrypt(us, _SecuritySeed);
+                          $("#login_form").append("<input type='hidden' id='login_password' name='login_password' value='"+encrypted+"' />")
+
+                    //   $("#login_password1").val(encrypted);
+                      // login_password赋值的val在浏览器自动填充的情况下偶发的赋值失败，导致登录失败，这里把加密好的值放在全局变量中，提交时替换成这个值
+              getCtpTop().encryptedLoginPassword = encrypted.toString();
+                        // encrypted = CryptoJS.DES.encrypt(us, _SecuritySeed);
+              }
+              
+
+              var loginFlag = true;
+              if(loginCallback) {
+                if(!loginCallback())
+                  loginFlag = false;
+              }
+              var hasPluginCA = "false";
+              var caFactory = '';
+              if(hasPluginCA == "true" &&caFactory!=''){
+                if("koal"!="" && isCa){
+                  caSign();
+                }
+              }
+              ;
+                                $("#login_password1").attr("disabled", 'disabled')
+
+                  if (loginFlag) {
+                        // $("#login_password1").remove()
+                } else {
+                        $("#login_password").remove()
+                }
+                //   var res = {};
+            //   res.loginFlag = loginFlag;
+            //   res.encrypted = encrypted;
+            //   return res;
+
+              return loginFlag;
+        }
+  $.ctx.template = {"id":"8663751873741276919","thumbnail":"default/thumbnail2.png","cdefault":0,"preset":1,"updateTime":"2025-04-29","sort":"2","updateUser":"-3020052556430422738","path":"default/login.jsp","description":"登录页模板二","name":"登录页模板二","extraMap":{},"new":false};
+  $.ctx.hotSpots = [{"id":"-8845997481882009478","ext9":null,"ext7":null,"hotspotkey":"changebgv","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"","module":0,"hotspotvalue":"","type":1,"description":"","name":"hotspot.name.changebgv","extraMap":{},"new":false},{"id":"-8473631474842186234","ext9":null,"ext7":null,"hotspotkey":"loginboxbuttonbgc","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":"100","ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"rgb(82, 77, 255)","type":2,"description":"","name":"hotspot.name.loginboxbuttonbgc","extraMap":{},"new":false},{"id":"-4533850255015983233","ext9":null,"ext7":null,"hotspotkey":"changebgispeed","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"speed2","type":0,"description":"","name":"hotspot.name.changebgispeed","extraMap":{},"new":false},{"id":"-3182193970849362062","ext9":null,"ext7":null,"hotspotkey":"newfeature","entityLevel":"System","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"hide","type":0,"description":"","name":"hotspot.name.newfeature","extraMap":{},"new":false},{"id":"-2628973537210249799","ext9":null,"ext7":null,"hotspotkey":"mainbgc","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":"100","ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"rgb(244, 244, 244)","type":2,"description":"","name":"hotspot.name.mainbgc","extraMap":{},"new":false},{"id":"-2420964170257183325","ext9":null,"ext7":null,"hotspotkey":"changebgi","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1","module":0,"hotspotvalue":"default/images/banner1.jpg,default/images/banner2.jpg,default/images/banner3.jpg,default/images/banner4.jpg,default/images/banner5.jpg,fileId=2721213191222546179,fileId=7425596058233750388,fileId=-4304333706006934819,fileId=-1573696705566061351,fileId=2941142455354147564,fileId=8090174274026422845,fileId=338564805570217320,fileId=-2769363058604748940,fileId=-8613217105964220233,fileId=-746916385412657964,fileId=-5059314850092202431,fileId=-7681216817539562275,fileId=4297349791080857605","type":1,"description":"","name":"hotspot.name.changebgi","extraMap":{},"new":false},{"id":"-1263928708095456204","ext9":null,"ext7":null,"hotspotkey":"showQr","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"0","type":0,"description":"","name":"hotspot.name.showQr","extraMap":{},"new":false},{"id":"-1207105088774189489","ext9":null,"ext7":null,"hotspotkey":"QrInfo","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"noselected","type":0,"description":null,"name":"hotspot.name.QrInfo","extraMap":{},"new":false},{"id":"-889265756383654313","ext9":null,"ext7":null,"hotspotkey":"changebgtype","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"","module":0,"hotspotvalue":"image","type":1,"description":"","name":"hotspot.name.changebgtype","extraMap":{},"new":false},{"id":"392292432734670204","ext9":null,"ext7":null,"hotspotkey":"loginboxbottombgc","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":"0","ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"rgb(255, 255, 255)","type":2,"description":"","name":"hotspot.name.loginboxbottombgc","extraMap":{},"new":false},{"id":"561255525457087077","ext9":null,"ext7":null,"hotspotkey":"loginboxposition","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"0%,0","type":0,"description":"","name":"hotspot.name.loginboxposition","extraMap":{},"new":false},{"id":"2523796262406343506","ext9":null,"ext7":null,"hotspotkey":"icp","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":0,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"","type":0,"description":"","name":"hotspot.name.icp","extraMap":{},"new":false},{"id":"3106464159216323351","ext9":null,"ext7":null,"hotspotkey":"icpColor","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":null,"entityId":"-1730833917365171641","ext2":"0","ext5":"100","ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"rgb(51, 51, 51)","type":0,"description":null,"name":"hotspot.name.icpColor","extraMap":{},"new":false},{"id":"3174175679160666811","ext9":null,"ext7":null,"hotspotkey":"loginboxmainbgc","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":"0","ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"rgb(0, 0, 0)","type":2,"description":"","name":"hotspot.name.loginboxmainbgc","extraMap":{},"new":false},{"id":"3749844465396239611","ext9":null,"ext7":null,"hotspotkey":"layout","entityLevel":"System","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"t_b","type":0,"description":"","name":"hotspot.name.layout","extraMap":{},"new":false},{"id":"5309979938798324820","ext9":null,"ext7":null,"hotspotkey":"topbgi","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"","type":1,"description":"","name":"hotspot.name.topbgi","extraMap":{},"new":false},{"id":"5894664507767145820","ext9":null,"ext7":null,"hotspotkey":"icp","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":0,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"","type":0,"description":"","name":"hotspot.name.icp","extraMap":{},"new":false},{"id":"7726529794824159693","ext9":null,"ext7":null,"hotspotkey":"shownumber","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"hide","type":0,"description":"","name":"hotspot.name.shownumber","extraMap":{},"new":false},{"id":"7962203159957357449","ext9":null,"ext7":null,"hotspotkey":"bgialign","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"zoom","type":0,"description":"","name":"hotspot.name.bgialign","extraMap":{},"new":false},{"id":"8382490161129671202","ext9":null,"ext7":null,"hotspotkey":"note","entityLevel":"System","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"棱镜极智能 OA管理系统","type":0,"description":"","name":"hotspot.name.note","extraMap":{},"new":false},{"id":"8982876139407101695","ext9":null,"ext7":null,"hotspotkey":"topbgiposition","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"18%,10%","type":0,"description":"","name":"hotspot.name.topbgiposition","extraMap":{},"new":false}];
+  var loginResult = "";
+  var dueRemind = "运维服务<font color=red>已到期</font>，请续办！";
+  var dueRemindV = "1";
+  $(function() {
+          $("#login_form").append("<input type='hidden' name='random' id='random' value='' />");
+          
+      //开启前端加密以后，不允许自动保存密码
+      $("#login_password1").attr("autocomplete","off");
+      $("#login_username").val("");
+      $("#login_password1").val("");
+      
+    if(loginResult){
+      $("#login_error").find("div").html(loginResult);
+      $("#login_error").show();
+    }else{
+      $("#login_error").hide();
+    }
+    if(seeyonProductId == 7){
+      //如果是a6s
+      var localeCfg = [{"eleid":"login_locale","defaultValue":"zh_CN","options":{"zh_CN":"中文（简体）"}}];
+    } else {
+      var localeCfg = [{"defaultValue":"zh_CN","eleid":"login_locale","options":{"zh_CN":"中文（简体）","zh_TW":"中文（繁體）","en":"English"}}];
+      if(seeyonProductId == 3 || seeyonProductId == 4){
+          delete localeCfg[0].options.en;
+      }
+    }
+    $.fillOption(localeCfg);
+
+/**
+    $("#login_locale").change(function() {
+      $("#login_locale").jsonSubmit({
+        action : _ctxPath + '/main.do?method=changeLocale'
+      });
+    });**/
+
+    var _dropdownObj =$.dropdown({
+          id:'login_locale',
+          onchange:function(){
+                  if(loginFrom && loginFrom!=''){
+                          $("#login_locale").jsonSubmit({
+                          action : _ctxPath + '/main.do?method=changeLocale&loginFrom=&topValue=&rowList='+encodeURIComponent(rowList)+'&btnbgc='+encodeURIComponent(btnbgc)+'&btombgc='+encodeURIComponent(btombgc)+'&bgc='+encodeURIComponent(bgc)+'&mailParam='
+                  });
+                  }else{
+                          $("#login_locale").jsonSubmit({
+                          action : _ctxPath + '/main.do?method=changeLocale&'+''
+                  });
+                  }
+          }
+    });
+    _dropdownObj.setValue(_locale);
+
+    $("#login_form").submit(function() {
+                var loginFlag = onLoginSubmit();
+        return loginFlag;
+    });
+
+    var submitCount= 0;
+    function loginButtonClick(){
+        if(submitCount==0){
+                submitCount ++;
+                $("#login_button").click();
+        }
+    }
+
+    var enterSubmit = true;
+    $("#login_username").keydown(function(event){
+      if(event.keyCode == 229) return;
+      if(event.keyCode == 40)
+        enterSubmit = false;
+                  if (event.keyCode==13) {
+                    if(enterSubmit)
+                        {
+                                 //针对password在首次按enter键提交无法获取值的情况进行特殊处理,支艳强，2016/05/04
+                                 //弹出一个progressBar,强制刷新DOM,浏览器会把password的内容展示出来
+                             var login_password = $("#login_password1").val();
+                                 if ($.trim(login_password) == "")
+                                         {
+                                                 var progress = $.progressBar();
+                                                 window.setTimeout(function(){
+                                                         progress.close();
+
+                                                         loginButtonClick();
+                                                 },100);
+                                         }
+                                 else
+                                         {
+                                                loginButtonClick();
+                                         }
+                        }
+                    else
+                      enterSubmit = true;
+                  }
+    });
+
+    $("#login_button").keydown(function(event){
+        if (event.keyCode==13) {
+                loginButtonClick();
+                }
+    });
+    $("#VerifyCode").keydown(function(event){
+      if (event.keyCode==13) {
+          loginButtonClick();
+      }
+        });
+    if("true" == "false" && "Jit" == ""){
+        $("#login_form").append("<input type='hidden' id='signed_data' name='signed_data' value=''>")
+                                        .append("<input type='hidden' id='original_jsp' name='original_jsp' value=''>")
+                                        .append("<input type='hidden' id='RootCADN' name='RootCADN' value=''>");
+    }
+  });
+</script><link rel="stylesheet" type="text/css" href="/seeyon/main/login/default/css/login.css?V=V8_2SP1_231013_1903070">
+<link rel="stylesheet" type="text/css" href="/seeyon/apps_res/phoneLogin/css/phoneLogin.css?V=V8_2SP1_231013_1903070">
+<link rel="stylesheet" type="text/css" href="/seeyon/skin/dist/fonts/syIconfont.css?V=V8_2SP1_231013_1903070">
+<link rel="stylesheet" type="text/css" href="/seeyon/common/ctpUi/dist/css/ctpUi.css?V=V8_2SP1_231013_1903070">
+<script type="text/javascript" src="/seeyon/common/js/passwdcheck.js?V=V8_2SP1_231013_1903070"></script>
+<script type="text/javascript" src="/seeyon/apps_res/phoneLogin/js/phoneLogin.js?V=V8_2SP1_231013_1903070"></script>
+<script type="text/javascript" src="/seeyon/common/ctpUi/dist/js/ctpUi.js?V=V8_2SP1_231013_1903070"></script>
+<script type="text/javascript">
+  var wechatCorpUrl = "";
+  var resSuffix = "?V=V8_2SP1_231013_1903070";
+</script>
+</head>
+<body onload="calSelecterHeight();" class="h100b" style="margin:0;padding:0;overflow:hidden;">
+    <!-- 传统登录页 -->
+            <div id="login_content">
+                <div id="login_wrap" style="background-color: rgb(244, 244, 244);">
+                    <div id="login_bg_video" class="login_bg_video" style="width: 1280px;">
+                        <!-- <div id="login_bg_video_mask" class="login_bg_video_mask"></div> -->
+                    </div>
+                    <div id="login_bg" class="slideBox" style="width: 1280px; height: 720px; overflow: hidden; position: relative;">
+                        <ul id="scroll_ul" class="slideImgs" style="width: 1280px; height: 720px; left: 0px;"><li style="float:left;width:1280px;height:720px;" class="active"><img src="/seeyon/fileUpload.do?method=showRTE&amp;type=image&amp;fileId=4297349791080857605" style="width:1280px;height:720px;left:0px;display:block;position:absolute;"></li></ul>
+                    </div>
+                    <form method="post" action="/seeyon/main.do?method=login" id="login_form" name="loginform" autocomplete="on" onsubmit="checkPwdStrength();">
+                        <input id="authorization" type="hidden" name="authorization" value="">
+                        <input id="timezone" type="hidden" name="login.timezone" value="">
+                        <input id="province" type="hidden" name="province" value="">
+                        <input id="city" type="hidden" name="city" value="">
+                        <input id="redirect_url" type="hidden" name="redirect_url" value="">
+                        <input id="token_login_app_id" type="hidden" name="token_login_app_id" value="">
+                        <input id="token_login_third_user_id" type="hidden" name="token_login_third_user_id" value="">
+                        <input id="request_auth_authenticator" type="hidden" name="request_auth_authenticator" value="">
+                        <input id="rectangle" type="hidden" name="rectangle" value="">
+                        <div id="login_area_div" class="login_area_t_b" style="background-color: rgba(0, 0, 0, 0); left: 0px; top: inherit; bottom: 0%;">
+                            <div class="login_area_body">
+                                <div class="login_box">
+                                            <div class="pic">
+                                                <div class="pic_box"><img src="/seeyon/apps_res/v3xmain/images/personal/pic.gif"></div>
+                                                <div class="pic_box_bg"></div>
+                                            </div>
+                                            <div class="login_top">
+                                                <div id="login_text_div" class="text" style="visibility: hidden;">
+                                                    A8+企业版（并发数：30）</div>
+                                                <div id="showAccountLogin"> 
+                                                    <!-- 用户名 -->
+                                                     <div class="username" style="background-color: rgb(255, 255, 255);">
+                                                        <em class="login_username_em"></em><input id="login_username" name="login_username" type="text" style="border:0;">
+                                                        <input id="trustdo_type" name="trustdo_type" type="hidden" value="">
+                                                    </div> 
+                                                    <!-- 密码  还需根据系统配置判断是否添加密码自动填充禁用功能-->
+                                                   <div class="password" id="login_password-wrapper" style="background-color: rgba(255, 255, 255, 0.7);">
+                                                        <em class="login_password_em"></em><input id="login_password1" onkeyup="loginButtonOnClickHandlerA(event)" autocomplete="off" name="login_password1" type="password">
+                                                    </div>
+                                                  <input type="hidden" id="login_validatePwdStrength" name="login_validatePwdStrength" value="4">
+                                                </div>
+                                                <div id="showPhoneLogin" style="display: none;"> 
+                                                     <!-- 客开新增 手机号 -->
+                                                    <div class="phonenumber" style="display: inline-flex; ">
+                                                        <em class="login_username_em"></em>
+                                                         <div class="common_txtbox_wrap areaCodes">
+                                                            <input type="text" id="selGroup" name="selGroup" value="" autocomplete="off" search="true">
+                                                        </div> 
+                                                        <!-- <select id="areaCodes" style="height: auto;border: 0px solid #D4D4D4;background: transparent;">
+                                                        </select> -->
+                                                        <input id="phone_number" name="phone_number" type="text" placeholder="请输入手机号" oninput="getPhoneNm()" onblur="getPhoneNm()">
+                                                        <input id="trustdo_type" name="trustdo_type" type="hidden" value="">
+                                                    </div>
+                                                    <!-- 客开新增 短信验证码 -->
+                                                    <div class="smsverifyCode" style="display: inline-flex;">
+                                                        <em class="login_password_em"></em>
+                                                        <input id="login_smsVerifyCode" name="login_smsVerifyCode" type="text" placeholder="请输入验证码">
+                                                        <input id="trustdo_type" name="trustdo_type" type="hidden" value="">
+                                                        <a onclick="getMessageCode();" id="sendSMSCode">获取验证码</a>
+                                                    </div>
+                                                </div>
+                                                <!-- 验证码 -->
+                                                <div class="captcha">
+                                                    </div>
+                                                <!-- 登陆按钮 -->
+                                                <div class="login_btn">
+                                                    <input type="button" id="login_button" class="point" value="登 录" onclick="loginButtonOnClickHandler();" style="background-color: rgb(82, 77, 255);">
+                                                    <input id="submit_button" type="submit" style="display: none" value="">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="login_bottom_div" class="login_bottom" style="background-color: rgba(255, 255, 255, 0); padding-top: 0px;">
+                                            <div class="fzIntall_area">
+                                                <div class="zhixin zhixin_left" title="找回密码？">
+                                                                                                <a onclick="retrievePassword();"><font color="white">找回密码？</font></a>
+                                                                                                </div>
+
+                                                <div id="login_bottom_div_assistantSetup_classic" class="hand zhixin zhixin_left" title="辅助程序" onclick="openAssistantSetup()" style="display: none;">
+                                                    <font>辅助程序</font>
+                                                </div>
+
+                                                <div class="right zhixin_language_select" style="width:75px;">
+                                                                                                             <select id="login_locale" style="display: none;"><option value="zh_CN">中文（简体）</option><option value="zh_TW">中文（繁體）</option><option value="en">English</option></select><div id="login_locale_dropdown" onmouseenter="mouseenterDown(&quot;login_locale&quot;,&quot;null&quot;)" onmouseleave="mouseleavelDown(&quot;login_locale&quot;)" class="common_drop_list common_drop_list_dropdown" style="width: 100%; position: relative;"><div id="login_locale_dropdown_title" class="common_drop_list_title"><a href="javascript:void(0)" class="common_drop_list_select common_button  " style="*margin-top:-1px;"><table width="100%" height="100%" cellpadding="0" cellspacing="0" class="ellipsis_table"><tbody><tr><td id="login_locale_dropdown_text" class="common_drop_list_text font_size12">中文（简体）</td><td width="20" align="left"><span class="syIcon sy-arrow-plane-down"></span></td></tr></tbody></table></a></div><iframe id="login_locale_dropdown_content_iframe" frameborder="0" style="position: absolute; z-index: 1000; background: rgb(255, 255, 255); display: none; top: -90px; right: 0px;"></iframe><div id="login_locale_dropdown_content" class="common_drop_list_content common_drop_list_content_action" style="position: absolute; z-index: 1000; background: rgb(255, 255, 255); display: none; overflow: hidden auto; top: -90px; right: 0px;"><a style="word-break:keep-all;white-space:nowrap" tar="login_locale" href="javascript:void(0)" value="zh_CN" title="中文（简体）" '="">中文（简体）</a><a style="word-break:keep-all;white-space:nowrap" tar="login_locale" href="javascript:void(0)" value="zh_TW" title="中文（繁體）" '="">中文（繁體）</a><a style="word-break:keep-all;white-space:nowrap" tar="login_locale" href="javascript:void(0)" value="en" title="English" '="">English</a></div></div>
+                                                                                                        </div>
+                                                                                                </div>
+
+                                        </div>
+                                        <!-- 第五套布局二维码入口 -->
+                                        <div class="qrcodeArea" style="display: none">
+                                        </div>
+                                        <!-- 密码错误显示 -->
+                                                <div id="login_error" class="login_error" style="display:none"><div></div></div>
+                                        <!-- 客开新增短信验证码错误显示 -->
+                                        <div id="phone_error" class="phone_error" style="display:none"><div></div></div>
+                                        
+                                    </div>
+                        </div>
+                    <input type="hidden" name="random" id="random" value=""></form>
+                     <div id="login_logo"><img src="" style="display: none;"></div>
+                    <div class="masks top_mask"></div>
+                    <div class="masks bottom_mask"></div>
+                    <div class="icp_info"><p>运维服务<font color="red">已到期</font>，请续办！</p></div>
+                </div>
+            </div>
+            <div class="appendObject"></div>
+        <!-- 二维码,7.1sp1调整到这里了 -->
+    <div id="QrcodeArea" class="QrcodeArea">
+        <div class="QrMask" onclick="javascript:hideQrcodeArea('mask')"></div>
+        <div id="QrMask4LoginPre" class="QrMask4LoginPre">
+            <div class="loginPreTips">请扫描下方二维码</div>
+        </div>
+        <div class="wrapper">
+            <div class="closeBtn" onclick="javascript:hideQrcodeArea('btn')"><i class="syIcon sy-close"></i></div>
+            <div class="topText">
+                <a id="flashQrcode">刷新二维码</a>
+                <span class="padding_lr_10">|</span>
+                <a target="_blank" href="/seeyon/main.do?method=qrCodeHelp">使用帮助</a>
+            </div>
+            <div class="ScrollArea">
+                <div id="prevBtn" class="prevBtn" onclick="javascript:showPrevQRPage()" onselectstart="return false"><i class="syIcon sy-arrow-left"></i></div>
+                <div id="nextBtn" class="nextBtn" onclick="javascript:showNextQRPage()" onselectstart="return false"><i class="syIcon sy-arrow-right"></i></div>
+                <div class="qrCodeGroup">
+                    <!-- 每屏最多4个二维码，超过4个就得新起一个UL -->
+                    <ul>
+                        <li id="qrcode4" style="display: none;">
+                            <div class="qrcode"><img id="u37_img" style="width: 171px; height: 171px;" src=""></div>
+                            <div class="qrtext">
+                                    trustdo.qrcode.auth</div>
+                        </li>
+                    </ul>
+                    <!-- 如果有新增的二维码，请按每4个码组成1个UL的规则进行添加 -->
+                    <!--
+                    <ul>
+                        <li id="qrcode5">
+                            <div class="qrcode"><img src="/seeyon/main/login/default/images/addChangeImg.png?V=V8_2SP1_231013_1903070"></div>
+                            <div class="qrtext">来凑数的测试二维码</div>
+                        </li>
+                    </ul>
+                    -->
+                </div>
+                <div id="qrCodeGroupNum" class="qrCodeGroupNum"></div>
+            </div>
+        </div>
+    </div>
+
+
+<script type="text/javascript" src="/seeyon/decorations/js/jquery.loginSlide.js?V=V8_2SP1_231013_1903070"></script>
+<script type="text/javascript" src="/seeyon/main/login/default/loginPreview.js?V=V8_2SP1_231013_1903070"></script>
+<script type="text/javascript">
+    // 监听窗口改变，刷新页面，非登录前门户
+    if(true) {
+        var resizeTimer = null;
+        var isRefreshCurrentSpace = true;
+        //记录当前的浏览器宽、高
+        var lastWindowWidth = document.documentElement.clientWidth;
+        var lastWindowHeight = document.documentElement.clientHeight;
+        $(window).resize(function() {
+            isRefreshCurrentSpace = true;
+            if(resizeTimer == null&&SeeUtils.isIE8){
+                resizeTimer = false;
+                return;
+            }
+            //每次进来先清空定时器
+            if (resizeTimer) clearTimeout(resizeTimer);
+
+            resizeTimer = setTimeout(function(){
+                //和上次的宽高比较,一样的话就return，特定版本IE9的resize一直被触发,进入死循环，这里防护一下
+                if(document.documentElement.clientWidth == lastWindowWidth && document.documentElement.clientHeight == lastWindowHeight ){
+                    return;
+                }
+                //奇葩浏览器再次防护，resize一直触发，且相差就一个滚动条的
+                if(SeeUtils.isIE && (Math.abs(document.documentElement.clientWidth - lastWindowWidth) < 20 || Math.abs(document.documentElement.clientHeight - lastWindowHeight)<20) ){
+                    return;
+                }
+
+                //移动设备上，不触发这个逻辑，先排除iPhone，iPad，Android，Android Pad
+                var ua = navigator.userAgent || '';
+                if (ua.indexOf('iPhone') !== -1 || ua.indexOf('iPad') !== -1 || ua.indexOf('Android') !== -1  || ua.indexOf('Android Pad') !== -1 ) {
+                    return;
+                }
+                //把resize后的宽高存起来
+                lastWindowWidth = document.documentElement.clientWidth;
+                lastWindowHeight = document.documentElement.clientHeight;
+                location.reload();
+            },200);
+        })
+    }
+    function sendBroadcast(type, data) {
+        localStorage.setItem('SY.Broadcast', JSON.stringify({type:type,stamp:+new Date,data:data||''}))
+    }
+
+    var verifyCode = "false";
+        var canLocation = "true";
+        var locationUrl = "https://restapi.amap.com/v3/ip?key=303e24733ada73ca23760ac77f19701b&output=jsonp";
+        if(canLocation=='true' && locationUrl!=''){
+                $.getScript(locationUrl + "&callback=setCurrentCity");
+        }
+        function setCurrentCity(json){
+                if (json && json.province && json.city && json.rectangle) {
+                        document.getElementById("province").value= json.province;
+                        document.getElementById("city").value= json.city;
+                        document.getElementById("rectangle").value= ""//json.rectangle;
+                }
+        }
+        var btnbgc= "";
+        var btombgc= "";
+        var bgc= "";
+    //默认透明
+    bgc = bgc !="null"? bgc : "transparent";
+    var login_index = "userLogin";
+    var resSuffix = "?V=V8_2SP1_231013_1903070";
+    var loginFromBol = true;
+    var _layout = "loginPre"; //登录前门户登录框样式
+    var QrInfo="noselected";
+    if(loginFromBol){
+        _layout = "t_b"; //模板布局：all，全屏；t_b，上下；l_r，左右；center，上下留白；
+    }else{
+        var rowList= "";
+        if(rowList==""){
+                rowList="blank";
+        }
+    }
+    $.ctx.hotSpots = [{"id":"-8845997481882009478","ext9":null,"ext7":null,"hotspotkey":"changebgv","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"","module":0,"hotspotvalue":"","type":1,"description":"","name":"hotspot.name.changebgv","extraMap":{},"new":false},{"id":"-8473631474842186234","ext9":null,"ext7":null,"hotspotkey":"loginboxbuttonbgc","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":"100","ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"rgb(82, 77, 255)","type":2,"description":"","name":"hotspot.name.loginboxbuttonbgc","extraMap":{},"new":false},{"id":"-4533850255015983233","ext9":null,"ext7":null,"hotspotkey":"changebgispeed","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"speed2","type":0,"description":"","name":"hotspot.name.changebgispeed","extraMap":{},"new":false},{"id":"-3182193970849362062","ext9":null,"ext7":null,"hotspotkey":"newfeature","entityLevel":"System","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"hide","type":0,"description":"","name":"hotspot.name.newfeature","extraMap":{},"new":false},{"id":"-2628973537210249799","ext9":null,"ext7":null,"hotspotkey":"mainbgc","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":"100","ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"rgb(244, 244, 244)","type":2,"description":"","name":"hotspot.name.mainbgc","extraMap":{},"new":false},{"id":"-2420964170257183325","ext9":null,"ext7":null,"hotspotkey":"changebgi","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1","module":0,"hotspotvalue":"default/images/banner1.jpg,default/images/banner2.jpg,default/images/banner3.jpg,default/images/banner4.jpg,default/images/banner5.jpg,fileId=2721213191222546179,fileId=7425596058233750388,fileId=-4304333706006934819,fileId=-1573696705566061351,fileId=2941142455354147564,fileId=8090174274026422845,fileId=338564805570217320,fileId=-2769363058604748940,fileId=-8613217105964220233,fileId=-746916385412657964,fileId=-5059314850092202431,fileId=-7681216817539562275,fileId=4297349791080857605","type":1,"description":"","name":"hotspot.name.changebgi","extraMap":{},"new":false},{"id":"-1263928708095456204","ext9":null,"ext7":null,"hotspotkey":"showQr","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"0","type":0,"description":"","name":"hotspot.name.showQr","extraMap":{},"new":false},{"id":"-1207105088774189489","ext9":null,"ext7":null,"hotspotkey":"QrInfo","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"noselected","type":0,"description":null,"name":"hotspot.name.QrInfo","extraMap":{},"new":false},{"id":"-889265756383654313","ext9":null,"ext7":null,"hotspotkey":"changebgtype","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"","module":0,"hotspotvalue":"image","type":1,"description":"","name":"hotspot.name.changebgtype","extraMap":{},"new":false},{"id":"392292432734670204","ext9":null,"ext7":null,"hotspotkey":"loginboxbottombgc","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":"0","ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"rgb(255, 255, 255)","type":2,"description":"","name":"hotspot.name.loginboxbottombgc","extraMap":{},"new":false},{"id":"561255525457087077","ext9":null,"ext7":null,"hotspotkey":"loginboxposition","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"0%,0","type":0,"description":"","name":"hotspot.name.loginboxposition","extraMap":{},"new":false},{"id":"2523796262406343506","ext9":null,"ext7":null,"hotspotkey":"icp","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":0,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"","type":0,"description":"","name":"hotspot.name.icp","extraMap":{},"new":false},{"id":"3106464159216323351","ext9":null,"ext7":null,"hotspotkey":"icpColor","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":null,"entityId":"-1730833917365171641","ext2":"0","ext5":"100","ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"rgb(51, 51, 51)","type":0,"description":null,"name":"hotspot.name.icpColor","extraMap":{},"new":false},{"id":"3174175679160666811","ext9":null,"ext7":null,"hotspotkey":"loginboxmainbgc","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":"0","ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"rgb(0, 0, 0)","type":2,"description":"","name":"hotspot.name.loginboxmainbgc","extraMap":{},"new":false},{"id":"3749844465396239611","ext9":null,"ext7":null,"hotspotkey":"layout","entityLevel":"System","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"t_b","type":0,"description":"","name":"hotspot.name.layout","extraMap":{},"new":false},{"id":"5309979938798324820","ext9":null,"ext7":null,"hotspotkey":"topbgi","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"","type":1,"description":"","name":"hotspot.name.topbgi","extraMap":{},"new":false},{"id":"5894664507767145820","ext9":null,"ext7":null,"hotspotkey":"icp","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":0,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"","type":0,"description":"","name":"hotspot.name.icp","extraMap":{},"new":false},{"id":"7726529794824159693","ext9":null,"ext7":null,"hotspotkey":"shownumber","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"hide","type":0,"description":"","name":"hotspot.name.shownumber","extraMap":{},"new":false},{"id":"7962203159957357449","ext9":null,"ext7":null,"hotspotkey":"bgialign","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"zoom","type":0,"description":"","name":"hotspot.name.bgialign","extraMap":{},"new":false},{"id":"8382490161129671202","ext9":null,"ext7":null,"hotspotkey":"note","entityLevel":"System","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"棱镜极智能 OA管理系统","type":0,"description":"","name":"hotspot.name.note","extraMap":{},"new":false},{"id":"8982876139407101695","ext9":null,"ext7":null,"hotspotkey":"topbgiposition","entityLevel":"System,Account","templateid":"8663751873741276919","ext6":null,"tiling":0,"subTemplateid":null,"ext10":null,"ext8":null,"display":1,"entityId":"-1730833917365171641","ext2":"0","ext5":null,"ext4":"-1730833917365171641","ext1":"0","ext3":"0","module":0,"hotspotvalue":"18%,10%","type":0,"description":"","name":"hotspot.name.topbgiposition","extraMap":{},"new":false}];
+    var imgSize={"fileId=338564805570217320":"2000,1125","fileId=7425596058233750388":"2000,1125","fileId=2941142455354147564":"2000,1125","fileId=-4304333706006934819":"1500,844","fileId=-746916385412657964":"2110,1112","default/images/banner5.jpg":"2000,1080","fileId=2721213191222546179":"2000,1125","default/images/banner3.jpg":"2000,1080","default/images/banner1.jpg":"2000,1080","fileId=4297349791080857605":"3200,1800","fileId=-2769363058604748940":"2110,1112","fileId=-8613217105964220233":"2110,1112","fileId=8090174274026422845":"2000,1125","default/images/banner4.jpg":"2000,1080","fileId=-7681216817539562275":"1920,1080","default/images/banner2.jpg":"2000,1080","fileId=-1573696705566061351":"2000,1125","fileId=-5059314850092202431":"2733,1441"};
+    var entryTime = new Date().getTime();
+    var times = 0;
+
+
+    /**
+     * 上传视频属性
+     */
+    var mediaObj = {};
+
+    /**
+     * 登录页背景类型.默认是image. 如果配置为视频.则为video
+     */
+    var changebgtype = 'image';
+
+    /**
+        渲染左侧背景视频
+     */
+    function randerBgi4video(){
+        if(typeof(mediaObj) != undefined && mediaObj.id != null){
+
+            $("#login_bg_video").show();
+            $("#login_bg").hide();
+            // alert(mediaObj.toString());
+            //console.log(mediaObj);
+            var _w = $("#login_bg_video").width();
+            var _h = $("#login_bg_video").height();
+            var scalingNum = 0;
+            // debugger;
+            var iframeWidth,iframeHeight,marginTop=0,marginLeft=0;
+            //放大或缩小宽度
+            if(mediaObj.videoWidth>mediaObj.videoHeight){
+                iframeWidth = _w;
+                scalingNum = _w/mediaObj.videoWidth;
+                iframeHeight = Math.ceil(mediaObj.videoHeight*scalingNum);
+                marginTop = Math.ceil((_h - iframeHeight)/2);
+            }else{//放大或缩小高度
+                iframeHeight = _h;
+                scalingNum = _h/mediaObj.videoHeight;
+                iframeWidth = Math.ceil(mediaObj.videoWidth*scalingNum);
+                marginLeft = Math.ceil((_w - iframeWidth)/2);
+            }
+
+
+            //创建dom插入
+            if($("#login_bg_video_iframe").length == 0){
+                var tempHtml = '<iframe style="width:'+iframeWidth+'px;height:'+iframeHeight+'px;margin-top:'+marginTop+'px;margin-left:'+marginLeft+'px;" id="login_bg_video_iframe" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" resize="none" scrolling="no" src="/seeyon/media/media.do?method=mediaShow&mediaId='+mediaObj.id+'&width='+iframeWidth+'&height='+iframeHeight+'&hideControl=true&autoPlay=true&isLoop=true" frameborder="0" scrolling="no"></iframe>';
+                $("#login_bg_video").append(tempHtml);
+            }else{
+                //已创建iframe就设置src和宽高位置即可
+                $('#login_bg_video_iframe').attr("src",'/seeyon/media/media.do?method=mediaShow&mediaId='+mediaObj.id+'&width='+iframeWidth+'&height='+iframeHeight+'&hideControl=true&autoPlay=true&isLoop=true');
+                $('#login_bg_video_iframe').css({
+                    'width': iframeWidth+'px',
+                    'height': iframeHeight+'px',
+                    'margin-top': marginTop+'px',
+                    'margin-left': marginLeft+'px'
+                });
+            }
+
+            //无法自动播放可能是浏览器权限的问题
+            //谷歌允许播放声音 -- 即可自动播放
+            //火狐浏览器允许自动播放 --- 即可自动播放
+            //ie11、360浏览器都可以自动播放
+            //1秒后手动触发播放
+            /*setTimeout(function(){
+                if($('#login_bg_video_iframe')[0].contentWindow.play){
+                    $('#login_bg_video_iframe')[0].contentWindow.play.play();
+                }
+            },2000)
+            // debugger;
+            $("#login_logo").click(function(event) {
+                if($('#login_bg_video_iframe')[0].contentWindow.play){
+                    $('#login_bg_video_iframe')[0].contentWindow.play.play();
+                }
+            });*/
+        }
+
+    }
+
+    $(function() {
+        //请求二维码---start
+        $.ajax({
+            async : false,
+            type: "GET",
+            url: _ctxPath+"/cloudbuild.do?method=getDownloadQrUrl",
+            dataType : 'text',
+            success : function(data) {
+                console.log("getDownloadQrUrl success", data);
+                // console.log(456,data.data);
+                $("#requestQrCode").attr('src',_ctxPath+data);
+            },
+            error : function(err) {
+                console.log("getDownloadQrUrl error", err);
+            }
+        });
+        //----end
+        loginDefault();
+         if( localStorage.getItem('loginType') && localStorage.getItem('loginType') == 'phone'){//记住用户上次登录方式，再次进入，默认为上次登录方式
+            $("#login_password1").val("");
+            swithToPhoneLogin('');
+           
+         }
+        if(loginFromBol){
+            //选中光标改变背景色
+            $("#login_username").focus(function(){
+                $(this).parent().css("background-color","#FFF");
+            }).blur(function(){
+                $(this).parent().css("background-color","rgba(255,255,255,0.7)");
+            });
+
+            $("#login_password1").focus(function(){
+                $(this).parent().css("background-color","#FFF");
+            }).blur(function(){
+                $(this).parent().css("background-color","rgba(255,255,255,0.7)");
+            });
+            $("#VerifyCode").focus(function(){
+                $(this).parent().css("background-color","#FFF");
+            }).blur(function(){
+                $(this).parent().css("background-color","rgba(255,255,255,0.7)");
+                if(_layout == "center"){
+                    $(this).parent().css("background-color","transparent");
+                }
+            });
+
+            //选中光标改变背景色,第四套登录框特殊处理
+            $(".login_area_center #login_username").focus(function(){
+                $(this).parent().css("background-color","#FFF");
+            }).blur(function(){
+                $(this).parent().css("background-color","transparent");
+            });
+
+            $(".login_area_center #login_password1").focus(function(){
+                $(this).parent().css("background-color","#FFF");
+            }).blur(function(){
+                $(this).parent().css("background-color","transparent");
+            });
+        }else{
+            
+            $(".fromLoginPrePortal #login_username").focus(function(){
+                $(this).css("background-color","#FFF");
+            }).blur(function(){
+                $(this).css("background-color","rgba(255,255,255,0.7)");
+            });
+
+            $(".fromLoginPrePortal #login_password1").focus(function(){
+                $(this).css("background-color","#FFF");
+            }).blur(function(){
+                $(this).css("background-color","rgba(255,255,255,0.7)");
+            });
+            $(".fromLoginPrePortal #VerifyCode").focus(function(){
+                $(this).css("background-color","#FFF");
+            }).blur(function(){
+                $(this).css("background-color","rgba(255,255,255,0.7)");
+            });
+        }
+        if(loginFromBol){
+                $("#login_username").focus();
+                $("#login_password1").blur();
+                $("#VerifyCode").blur();
+        }
+
+        //缩小语言选择框宽度
+        $("#login_locale_dropdown").mouseenter(function(event) {
+            $("#login_locale_dropdown_content").height("auto");
+        });
+        //IE9以下头像边框不显示
+        if ($.browser.msie){
+            if($.browser.version < 9){
+                $(".pic_box_bg").hide();
+                $(".pic_box img").css({"display":"block","width":"92px","height":"92px","border":"2px solid #FFF"});
+                //IE9以下背景色处理,统一背景色和底部色
+                if(loginFromBol){ //排除登录栏目
+                    $("#login_area_div").css({"background":" url(/seeyon/main/login/default/images/black40.png)"});
+                }
+                $(".login_bottom").css({"background":" url(/seeyon/main/login/default/images/whight40.png)"});
+            };
+        };
+        //针对第五套布局显示二维码入口
+        if(_layout == "center_big"){
+            $(".qrcodeArea").show();
+            if(!document.getElementById('isShowQR')){
+                document.getElementById('isShowSeparator').style.display = 'none';
+            }
+        }else{
+            $(".qrcodeArea").hide();
+            var isOnMobileCode = "false";
+            if(isOnMobileCode && isOnMobileCode != 'false'){
+                $(".qrcodeArea").show();
+                $(".qrcodeArea").css("text-align", "center");
+                if(_layout == 't_b'){//登录模板二
+                    $(".qrcodeArea").css("padding-top", "11px");
+                    $(".qrcodeArea").css("float", "right");
+                    $(".qrcodeArea").css("position", "absolute");
+                    $(".qrcodeArea").css("left", "62%");
+                }
+                if(document.getElementById('isShowQR')){
+                    document.getElementById('isShowQR').style.display = 'none';
+                    document.getElementById('isShowSeparator').style.display = 'none';
+                }
+                if(_layout !='loginPre' && document.getElementById('isShowSeparator')){
+                    document.getElementById('isShowSeparator').style.display = 'none';
+                }
+                if(_layout == 'all' && $('#isShowQR').is(':visible')){
+                    $(".qrcodeArea").css("background-color", 'rgb(19, 62, 100)'); 
+                }
+                if(_layout == 'loginPre'){//登录前门户 二
+                    document.getElementsByClassName("qrcodeAreaLogin")[0].style.display ='none';
+                    if (document.getElementById('isShowSeparator')) {
+                        document.getElementById('isShowSeparator').style.display = 'none';
+                    }
+                }
+                
+            }
+            //客开新增   第四,三套布局 需要显示短信验证码登录 --end
+        }
+        //二维码
+        changeLoginMode(_layout);
+
+        if ($.browser.msie) {
+            //辅助程序
+            $(".appendObject").append('<OBJECT name="OneSetup" class="hidden" classid="clsid:6076464C-7D15-42DF-829C-7A0194D4D61E" codebase="/seeyon/common/setup/install.cab#version=1,0,0,4" width=0% height=0% align=center hspace=0 vspace=0></OBJECT>');
+
+        }
+        if(loginFromBol){
+                //改变窗口大小，重新加载背景图片
+                window.onresize = function(){
+                if(_bgialign && _bgialign == "zoom"){
+                    setSliderBgImg();
+                }
+                    changeSlide(_changebgispeed);
+                }
+                //调整登录框的位置
+                adjustLoginPosition();
+        }
+
+        initQRcodeArea();
+
+        //个性化设置：是否显示二维码，是否显示版本和并发，登录框底部颜色、按钮颜色、背景颜色
+        $('body').append("<style>" +
+                "body{background-color:"+ bgc +" }" +
+                "#login_button{background-color:"+ btnbgc +" }" +
+                ".fromLoginPrePortal .login_bottom{background-color:"+ btombgc +" }" +
+                "</style>");
+        if(rowList == "qrCode" || rowList == "qrCode,blank"){
+            $("#login_text_div").css("visibility", "hidden");
+            $(".qrCodeBtn").css("visibility", "visible");
+            if(QrInfo=="noselected"){
+                $(".qrCodeBtn").css("visibility", "hidden");
+            }
+        }else if(rowList == "productInfo" || rowList == "productInfo,blank"){
+            if(QrInfo=="noselected"){
+                $(".qrCodeBtn").css("visibility", "hidden");
+            }
+            $("#login_text_div").css("visibility", "show");
+        }else if(rowList == "qrCode,productInfo,blank" || rowList == "qrCode,productInfo"){
+            $("#login_text_div").css("visibility", "visible");
+            $(".qrCodeBtn").css("visibility", "visible");
+            if(QrInfo=="noselected"){
+                $(".qrCodeBtn").css("visibility", "hidden");
+            }
+        }else if(rowList == "blank" || rowList=="null"){
+            $("#login_text_div").css("visibility", "hidden");
+            if(QrInfo=="noselected"){
+                $(".qrCodeBtn").css("visibility", "hidden");
+            }
+        }
+
+        var topValue= "";
+        
+        if(rowList == "blank"){
+            $('body').append("<style>" +
+            ".fromLoginPrePortal .login_area_body{margin-top: 5px;}" +
+            "</style>");
+        }
+        var isSmsError = "";
+        var isOnMobileCodeAuthentication = "false";
+        if(isSmsError == "true" && !isOnMobileCodeAuthentication){
+            var telNumber = "89";
+            initSmsCodeInfo(telNumber);
+        }
+    });
+
+    var sendSMSCodeTime = 89;
+    var getSMSCodeTime = 60;
+    function UpdateLoginSeed(){
+        $.ajax({
+            async : false,
+            type: "GET",
+            url: _ctxPath+"/main.do?method=updateLoginSeed",
+            dataType : 'text',
+            success : function(data) {
+                if(data&&data!=""&&_SecuritySeed!=data){
+                    _SecuritySeed=data;//登录加密种子需要更新
+                }
+            },
+            error : function(XMLHttpRequest, textStatus, errorThrown) {
+                alert($.i18n('login.tip.failure'));
+            }
+        });
+    }
+    function loginCallback() {
+        return true;
+    }
+
+    function retrievePassword(){
+        $.ajax({
+                sync : true,
+                type: "POST",
+                url: _ctxPath+"/personalBind.do?method=isCanUse",
+                dataType : 'text',
+              success : function(data) {
+                  var isCanUse = jQuery.parseJSON(data);
+                     if(isCanUse=="true" || isCanUse==true){
+                        window.open(_ctxPath + '/personalBind.do?method=retrievePassword');
+                     }else{
+                                var msg = "管理员未设置系统邮箱，也未启用短信插件，</br>不能使用密码找回功能，请联系管理员！" ;
+                                        retrievePwdMsg = $.messageBox({
+                                                'id':"retrievePwdMessageBox",
+                                                'type': 0,
+                                                'msg': "<div class='msgbox_img_2' style='float:left'></div><div class='margin_t_5 margin_l_5' style='float:left'>" + msg + "</div>"
+                                        });
+                     }
+                },
+                error : function(XMLHttpRequest, textStatus, errorThrown) {
+                         alert($.i18n('login.tip.failure'));
+                }
+        });
+    }
+
+    // 快速需求(Fast Demand):登陆页面验证码可点击刷新,并且连续点击10次以上,禁用一分钟
+    function changeVerifyCodeImg(obj){
+        if(times >= 10){
+            alert("刷新验证码太频繁，请稍后再试。");
+            setTimeout(function(){times=0;},60000);
+            return;
+        }
+        times ++;
+        //var img=document.getElementsByTagName("img")[obj];// 验证码的图片位置
+        var img=document.getElementById("VerifyCodeImg");//不能根据html img标签来获取呀，登录页可以变动，当有img标签的时候获取的不对啊
+        img.src="/seeyon/verifyCodeImage.jpg?" + new Date().getTime();
+    }
+
+    function doLoginSubmit(){
+        if(false && "iTrus"==""){//
+                chooseCert();
+        }else{
+        
+                                $("#submit_button").click();
+
+        }
+    }
+
+    //只有登录前门户用
+    function doAjaxLogin(){
+        var loginFlag = onLoginSubmit();
+        if(!loginFlag){
+                return;
+        }
+        // var res = onLoginSubmit();
+        // if(!res.loginFlag){
+        //      return;
+        // }
+        var formObj=$("#login_form").formobj();
+        formObj["loginFrom"] = "loginPortal";
+        formObj["login.timezone"] = $("#timezone").val();
+        formObj["login.smsVerifyCode"] = $("#smsVerifyCode").val();
+        formObj["login.VerifyCode"] = $("#VerifyCode").val();
+        formObj["province"] = $("#province").val();
+        formObj["city"] = $("#city").val();
+        formObj["redirect_url"]=$('#redirect_url').val();
+        formObj["token_login_app_id"]=$('#token_login_app_id').val();
+        formObj["token_login_third_user_id"]=$('#token_login_third_user_id').val();
+        formObj["request_auth_authenticator"]=$('#request_auth_authenticator').val();
+        formObj["rectangle"] = $("#rectangle").val();
+        // formObj["login_password"] = res.encrypted;
+
+        // login_password赋值的val在浏览器自动填充的情况下偶发的赋值失败，导致登录失败，前面把加密好的值放在全局变量中，提交时替换成这个值
+        if (getCtpTop().encryptedLoginPassword) {
+            formObj["login_password"] = getCtpTop().encryptedLoginPassword;
+        }
+        $.ajax({
+                sync : true,
+                type: "POST",
+            headers: {
+                Accept:"text/plain"
+            },
+                url: "/seeyon/main.do?method=login",
+                data : formObj,
+                success : function(data) {
+                    getCtpTop().encryptedLoginPassword = null;
+                        if(data.indexOf("ok")==0){
+                                window.top.location.href = _ctxPath + "/indexOpenWindow.jsp";
+                        }else{
+                                if(data.indexOf("ok")==0){
+                                        window.top.location.href = _ctxPath + "/indexOpenWindow.jsp";
+                                }else{
+                                        if(data.indexOf("0;url=")>=0){
+                                                        alert($.i18n('login.tip.failure'));
+                                                reloadLoginPage();
+                                        }else{
+                                // V5-29948 后端希望前端做一下兼容
+                                if(data.length < 100){
+                                                            alert(data);
+                                }
+                                                reloadLoginPage();
+                                        }
+                                }
+                        }
+                },
+                error : function(XMLHttpRequest, textStatus, errorThrown) {
+                        alert($.i18n('login.tip.incorrect'));
+                                reloadLoginPage();
+                }
+        });
+    }
+        function reloadLoginPage(){
+                window.top.location.href = _ctxPath + "/main.do?method=main&loginPortal=1&portalId=-7779029842361826066";
+        }
+        function initSmsCodeInfo(telNumber){
+        if ($("#smsLoginInputDiv").length == 0) {
+            var flag1 = false;
+            if (!flag1){
+                $('.password').hide()
+            }
+            var smsHtml = "<div id='smsLoginInputDiv' class='clearfix'>";
+            if ($.browser.msie && $.browser.version < 9) {
+                smsHtml += "<div class='smsLogin_textbox' style='background:url(/seeyon/main/login/default/images/white.png)'>";
+            }else{
+                smsHtml += "<div class='smsLogin_textbox'>";
+            }
+            smsHtml += "<input title='请输入短信验证码' id='smsVerifyCode' name='login.smsVerifyCode' type='text' maxlength='8' />";
+            smsHtml += "</div>";
+            if (telNumber != "TRUE") {
+                smsHtml += "<div class='smsLogin_btn smsLogin_btn_disable' id='sendSMSCodeButton'>"+telNumber+" "+"重新获取</div>";
+            } else {
+                smsHtml += "<div class='smsLogin_btn' id='sendSMSCodeButton'>获取验证码</div>";
+            }
+            smsHtml += "</div>";
+            $(".captcha").after(smsHtml);
+            if(loginFromBol){
+                $("#smsVerifyCode").focus(function(){
+                    $(this).parent().css("background-color","#FFF");
+                }).blur(function(){
+                    if(_layout == "center"){
+                        $(this).parent().css("background-color","transparent");
+                    }else{
+                        $(this).parent().css("background-color","rgba(255, 255, 255, 0.7)");
+                    }
+                });
+            }
+            if (telNumber != 'TRUE') {
+                sendSMSCodeTime = telNumber;
+                var interval = setInterval(function() {
+                    sendSMSCodeTime--;
+                    if (sendSMSCodeTime == 0) {
+                        $("#sendSMSCodeButton").html("获取验证码").removeClass('smsLogin_btn_disable');
+                        sendSMSCodeTime = 89;
+                        clearInterval(interval);
+                    } else {
+                        $("#sendSMSCodeButton").html(sendSMSCodeTime + " " + "重新获取").addClass('smsLogin_btn_disable');
+                    }
+                }, 1000);
+            }
+
+            $("#sendSMSCodeButton").click(function() {
+                if (sendSMSCodeTime != 89) {
+                    return;
+                }
+                var login_username = $("#login_username").val();
+                new portalManager().sendSMSLoginCode(login_username, {
+                    success: function(msg) {
+                        if (msg == "success") {
+                            $("#smsVerifyCode").val("");
+                            var interval = setInterval(function() {
+                                sendSMSCodeTime--;
+                                if (sendSMSCodeTime == 0) {
+                                    $("#sendSMSCodeButton").html("获取验证码").removeClass('smsLogin_btn_disable');
+                                    sendSMSCodeTime = 89;
+                                    clearInterval(interval);
+                                } else {
+                                    $("#sendSMSCodeButton").html(sendSMSCodeTime + " " + "重新获取").addClass('smsLogin_btn_disable');
+                                }
+                            }, 1000);
+                            $("#sendSMSCodeButton").html(sendSMSCodeTime + " " + "重新获取").addClass('smsLogin_btn_disable');
+                        } else {
+                            $("#login_error").css("background-image", "none");
+                            $("#login_error").find("div").html(msg);
+                            $("#login_error").show();
+                        }
+                    }
+                });
+            });
+            $("#smsLoginInputDiv").show();
+        } else {
+            doLoginSubmit();
+        }
+    }
+    function loginButtonOnClickHandler() {
+        
+        var leaveTime = new Date().getTime();
+        if(_SecuritySeed !== "") {
+            //仅在开启登录加密时进行加密种子更新校验
+            var SeedTimeOutInSeconds=60*30;//默认30分钟
+            try{
+                SeedTimeOutInSeconds=parseInt(_SecuritySeedTimeOut);
+            }
+            catch (e) {
+
+            }
+            if(SeedTimeOutInSeconds>60){
+                //考虑网络原因提前一分钟到期校验
+                SeedTimeOutInSeconds=SeedTimeOutInSeconds-60;
+            }
+            if(_SecuritySeedTimeOut!==""&&leaveTime - entryTime >SeedTimeOutInSeconds*1000) {
+                UpdateLoginSeed();
+            }
+        }
+        var timeZoneId = getTimeZoneId();
+                $("#timezone").val(timeZoneId);
+
+        var login_username = $("#login_username").val();
+        if ($.trim(login_username) == "" && !phoneNumberLogin) {
+                doLoginSubmit();
+        } else {
+            var smsVerifyCode = "";
+            if ($("#smsLoginInputDiv").length == 1) {
+                smsVerifyCode = $.trim($("#smsVerifyCode").val());
+            }
+            var isCanUseSMS = false;
+            var isOnfactorsAuthentication = false;
+            var isOnMobileCodeAuthentication = "false";
+            if(isOnMobileCodeAuthentication && phoneNumberLogin){
+                validateMessageCode();
+            }else if (intervalQrcode || !isCanUseSMS || ($("#smsLoginInputDiv").length == 1 && smsVerifyCode != "")) {
+                doLoginSubmit();
+            } else {
+                //进行短信登录验证
+                new portalManager().smsLoginEnabled(login_username, {
+                    success: function(telNumber) {
+                        if ( telNumber && $.trim(telNumber).length > 0 && (telNumber == "TRUE" || telNumber == "89")) {
+                            initSmsCodeInfo(telNumber);
+                        } else {
+                            $("#smsVerifyCode").val("");
+                            if(isOnfactorsAuthentication){//开启双因子之后(除管理员外)强制校验短信+用户名
+                                //getCtpTop().$.alert(telNumber);
+                                if(telNumber != ""){
+                                    if($("#login_error").length > 0){
+                                        $("#login_error").find("div").html(telNumber);
+                                        $("#login_error").show();
+                                    }else{
+                                        getCtpTop().$.alert(telNumber);
+                                    }
+                                    return;
+                                }
+                            }
+                            doLoginSubmit();
+                        }
+                    },
+                    error: function() {
+                        doLoginSubmit();
+                    }
+                });
+            }
+        }
+    }
+
+    function loginButtonOnClickHandlerA(event) {
+        if(event.keyCode == 13){
+            loginButtonOnClickHandler();
+        }
+    }
+
+    function getTimeZoneId(){
+        //获取客户端时区
+        var d = new Date();
+        var timezoneOffset = 0 - d.getTimezoneOffset();
+        var gmtHours = (timezoneOffset/60).toString();
+        //8  -8:30  8:45
+        var gmtHoursArr = gmtHours.split(".");
+        var h = gmtHoursArr[0];
+        if(h>=0){
+                h = "+"+h;
+        }
+        var m = "00";
+        if(gmtHoursArr.length>1){
+                m = Number("0."+gmtHoursArr[1]) * 60;
+        }
+        return  "GMT"+h+":"+m;
+    }
+
+    var commonProgressbar = null;
+
+    //开始进度条
+    function startProc(title) {
+        try {
+            var options = {
+                title: title
+            };
+            if (title == undefined) {
+                options = {};
+            }
+            if (commonProgressbar != null) {
+                commonProgressbar.start();
+            } else {
+                commonProgressbar = new MxtProgressBar(options);
+            }
+        } catch (e) {}
+    }
+
+    //结束进度条
+    function endProc() {
+        try {
+            if (commonProgressbar) {
+                commonProgressbar.close();
+            }
+            commonProgressbar = null;
+        } catch (e) {}
+    }
+
+    var openAssistantFlag = 0;
+    function openAssistantSetup() {
+        if(openAssistantFlag === 0) {
+            openAssistantFlag = 1;
+            setTimeout(function(){
+                openAssistantFlag = 0;
+            },30000);
+        }else {
+            getCtpTop().$.alert("每30秒仅允许下载1次，请勿频繁点击!");
+            return;
+        }
+        var myhost= window.location.host;
+        var myport= window.location.port;
+        if(myport==""){
+            myport= "80";
+        }
+        var ucUrl= "/"+myhost+"/"+myhost+"/"+myport;
+        var obj = null;
+        try {
+            obj = new ActiveXObject("SeeyonActivexInstall.SeeyonInstall");
+            var ele = document.getElementById("login_locale");
+            var locale = ele != null ? ele.value : '';
+            if( ele == null){
+                locale = navigator.browserLanguage.replace(/([a-z]{2})(-)*([A-Z|a-z]{2})*/,function($0,$1,$2,$3){
+                    var s = $1;
+                    if( '-' == $2){
+                        s += '_';
+                        s += $3.toUpperCase();
+                    }
+                    return s;
+                });
+            }
+
+            startProc("请稍候,正在初始化程序...");
+            var result = obj.Startup(_ctxServer + "/autoinstall/A8", locale + ucUrl, "@videoconf@seeyonRootCA@identificationDog@officeOcx@erweima@U8Reg@wizard@zhixin");
+            endProc();
+        } catch (e) {
+            window.location.href=_ctxServer + '/autoinstall.do?method=regInstallDown64';
+            /*
+            getA8Top().alterWin = $.dialog({
+                htmlId: 'alert',
+                title: "自动安装",
+                url: "/seeyon/genericController.do?ViewPage=apps/autoinstall/downLoadIESet",
+                isClear: false,
+                width: 420,
+                height: 200
+            });
+            */
+        }
+    }
+    function calSelecterHeight(){
+        var topValue = "";
+        var languageSize = $("#login_locale_dropdown_content a").length;
+        $("#login_locale_dropdown_content").css("overflowX","hidden");
+        var languageTop = languageSize*30;
+        if(topValue =="21"){
+                var languageTopStr= "-"+languageTop+"px";
+                $("#login_locale_dropdown_content_iframe").css("top", languageTopStr).css("right", "0");
+            $("#login_locale_dropdown_content").css("top",languageTopStr).css("right", "0");
+        }else{
+                var select_h = $("#login_area_div").offset().top +  $("#login_area_div").height() + languageTop;
+            if (select_h >= $(window).height()) {
+                $("#login_locale_dropdown_content_iframe").css("top", "-"+ $("#login_locale_dropdown_content").height() + "px").css("right", "0");
+                $("#login_locale_dropdown_content").css("top","-"+ $("#login_locale_dropdown_content").height() +"px").css("right", "0");
+            }else{
+                 $("#login_locale_dropdown_content_iframe").css("top","25px").css("right", "0");
+                $("#login_locale_dropdown_content").css("top","25px").css("right", "0");
+            };
+        }
+        preLoadResource();
+    }
+    function preLoadResource(){
+        var preloadList=[
+        '/portal/icons/default/fonts/line/iconfont.eot?V=V80_2022-11-11',
+        '/portal/icons/default/fonts/plane/iconfont.eot?V=V80_2022-11-12',
+        '/skin/icons/default/fonts/plane/iconfont.eot?V=V81SP2_2022-07-06',
+        // '/common/ctpUi/dist/js/ctpUi.min.js'+resSuffix,
+        // '/apps_res/collaboration/js/summary-jsp-min.js'+resSuffix,
+        '/common/js/polyfill.min.js'+resSuffix,
+        '/skin/dist/min/skinComponents-defaultTheme-min.css'+resSuffix,
+
+        ];
+        for(var i=0;i<preloadList.length;i++){
+            $.ajax({
+                url:_ctxPath + preloadList[i],
+                async: true
+            });
+        }
+    }
+    function checkPwdStrength(){
+        var login_validatePwdStrength =4;
+        var login_password = $("#login_password1").val();
+        if ($.trim(login_password) == "") {
+        }else{
+                login_validatePwdStrength = getPwdStrongForLoginPage(login_password);
+                $("#login_validatePwdStrength").val(login_validatePwdStrength);
+        }
+        $("#login_password1").attr("disabled", 'disabled')
+        return true;
+    }
+    //调整登录框的位置
+    function adjustLoginPosition(){
+        var window_h = $(window).height();
+        var login_h = $("#login_area_div").height();
+        var login_top = $("#login_area_div").offset().top;
+        var login_left = $("#login_area_div").offset().left;
+
+        if (_layout == "all" || _layout == "center" || _layout=="center_big") {//第一套和第四套布局只判断bottom和left
+            if (login_left <= 0) {
+                $("#login_area_div").css({
+                    "left":"0px",
+                    "right":"inherit"
+                });
+            }
+            if (window_h - login_top < login_h) {
+                if(loginFromBol){
+                    $("#login_area_div").css({
+                        "bottom":"40px",
+                        "top":"inherit"
+                    });
+                }
+            }
+        }else if (_layout == "t_b") {//第二套布局只判断top
+            if (login_top <= 0) {
+                $("#login_area_div").css({
+                    "top":"0px",
+                    "bottom":"inherit"
+                });
+            }
+        }else if (_layout == "l_r"){//第四套布局只判断left
+             if (login_left <= 0) {
+                $("#login_area_div").css({
+                    "left":"0px",
+                    "right":"inherit"
+                });
+            }
+        }
+    }
+    var pageNum;
+    function initQRcodeArea() {
+        pageNum = $("#QrcodeArea").find("ul").length;
+        if(pageNum > 1) {
+            $("#prevBtn,#nextBtn").show();
+            var _tempStr = "";
+            for (var i = 1; i < pageNum; i++) {
+                _tempStr += "<span></span>";
+            }
+            $("#qrCodeGroupNum").append(_tempStr);
+        }else{
+            $("#qrCodeGroupNum").empty();
+        }
+    }
+
+    //新改造的二维码功能
+    var currentQRcodePage = 1;
+    function showPrevQRPage() {
+        if (currentQRcodePage <= 1) {
+            return;
+        }
+        currentQRcodePage --;
+        $("#QrcodeArea").find("ul").hide().eq(currentQRcodePage - 1).show();
+        $("#qrCodeGroupNum").find("span").removeClass("current").eq(currentQRcodePage - 1).addClass("current");
+    }
+    function showNextQRPage() {
+        if (currentQRcodePage >= pageNum) {
+            return;
+        }
+        currentQRcodePage ++;
+        $("#QrcodeArea").find("ul").hide().eq(currentQRcodePage - 1).show();
+        $("#qrCodeGroupNum").find("span").removeClass("current").eq(currentQRcodePage - 1).addClass("current");
+    }
+
+    var topWin = getCtpTop();
+    var isLoginPre = typeof(topWin.vPortal) === "object" && topWin.vPortal.portalType === "3" ? true : false;
+    var winName = window.name;
+    var winURL = window.location.href;
+    var oldPostion = {
+        "win": {},
+        "loginPreBtnIframeDiv": {},
+        "loginSectionDiv": {},
+        "loginSectionParentDiv": {},
+        "IframeSectionTempleteDiv": {}
+    };
+    var loginPreBtnIframeDiv,wrapperDiv,loginPreBtnIframe,loginBtnCloseDiv,QrMask4LoginPreDiv,loginSectionDiv,IframeSectionTempleteDiv,winH;
+    var cssIsAppend = false;
+    var isExportOldTemp;
+    //显示二维码
+    function showQrcodeArea() {
+        //操作css
+        if(isLoginPre && !cssIsAppend) {
+            var newCss = topWin.document.createElement('link');
+            newCss.type = 'text/css';
+            newCss.rel = 'stylesheet';
+            newCss.href = "/seeyon/main/login/default/css/login4PrePortal.css?V=V8_2SP1_231013_1903070";
+            var topWinHead = topWin.document.getElementsByTagName('head')[0];
+            topWinHead.appendChild(newCss);
+            cssIsAppend = true;
+        }
+        //7.1SP1改造二维码时修改了元素的ID并新增id:loginPreBtnIframeDiv，之前版本导出再导入的模板因ID不一样会报错，用isExportOldTemp来兼容一下，-_-!!!
+        if (topWin.document.getElementById("loginPreBtnIframeDiv") == null) {  //7.1SP1之前导出的模板
+            isExportOldTemp = true;
+            loginPreBtnIframeDiv = topWin.document.querySelector(".loginPreBtnIframe");
+            loginPreBtnIframe = topWin.document.getElementById("loginPreBtnIframeId");
+        }else{
+            loginPreBtnIframeDiv = topWin.document.getElementById("loginPreBtnIframeDiv");
+            loginPreBtnIframe = topWin.document.getElementById("loginPreBtnIframe");
+        }
+        wrapperDiv = topWin.document.getElementById("wrapper");
+        loginBtnCloseDiv = topWin.document.querySelector(".loginBtnClose");
+        QrMask4LoginPreDiv = document.getElementById("QrMask4LoginPre");
+
+        //如果是栏目用id来取，保证唯一
+        var ids = window.frameElement && (window.frameElement.getAttribute("sectionid") || window.frameElement.getAttribute("data-x-sectionid"));
+        if(ids){
+            loginSectionDiv = topWin.document.querySelector("#loginSection_"+ids);
+            IframeSectionTempleteDiv = topWin.document.querySelector("#IframeSectionTemplete_"+ids).parentNode;
+        }
+
+        winW = $(topWin).width();
+        winH = $(topWin).height();
+        //登录前门户-右上角登录按钮，登录前门户-登录栏目，普通登录页，三种情况各自的逻辑处理
+        if((winName === "loginPreBtnIframe" || winName === "") && winURL.indexOf("loginFrom=loginPortal") > -1){
+            //登录前门户，右上角登录框弹出的iframe
+            topWin.$("body").addClass("loginPreBtnIframePage");
+            oldPostion["loginPreBtnIframeDiv"].top = loginPreBtnIframeDiv.style.top;
+            oldPostion["loginPreBtnIframeDiv"].right = loginPreBtnIframeDiv.style.right;
+            oldPostion["loginPreBtnIframeDiv"].width = loginPreBtnIframeDiv.style.width;
+            oldPostion["loginPreBtnIframeDiv"].height = loginPreBtnIframeDiv.style.height;
+            loginPreBtnIframeDiv.style.width = "100%";
+            loginPreBtnIframeDiv.style.height = "100%";
+            loginPreBtnIframe.style.width = "100%";
+            loginPreBtnIframe.style.height = winH + "px";
+            loginBtnCloseDiv.style.display = "none";
+            QrMask4LoginPreDiv.style.display = "block";
+            $("#QrcodeArea").show();
+        }else if(window.name === "IframeSectionTemplete" && winURL.indexOf("loginFrom=loginPortal") > -1){
+            //登录前门户，登录栏目
+            oldPostion["loginSectionDiv"].height = loginSectionDiv.offsetHeight;
+            oldPostion["loginSectionParentDiv"].height = loginSectionDiv.parentNode.offsetHeight;
+            oldPostion["IframeSectionTempleteDiv"].height = IframeSectionTempleteDiv.offsetHeight;
+            topWin.$("body").addClass("IframeSectionTemplete");
+            $(loginSectionDiv).parents(".col").css("zIndex","100");
+            topWin.document.documentElement.style.overflow = "hidden";
+            loginSectionDiv.parentNode.style.height = winH + "px";
+            //最后点击的让他拥有最高的z-index
+            // loginSectionDiv.style.zIndex = topWin.getMaxZindex();
+            $(loginSectionDiv).addClass("topmost");
+            loginSectionDiv.style.height = winH + "px";
+            IframeSectionTempleteDiv.style.height = winH + "px";
+            loginBtnCloseDiv.style.display = "none";
+            QrMask4LoginPreDiv.style.display = "block";
+            $("#QrcodeArea").show();
+        }else{
+            $("#QrcodeArea").fadeIn();
+        }
+        //均分显示
+        var QrLi = $("#QrcodeArea").find(".qrCodeGroup ul:first").find("li:visible");
+        var QrLen = QrLi.length;
+        var eachQrW = Math.floor(100/QrLen);
+        QrLi.each(function(){
+            $(this).css("width",eachQrW + "%");
+        });
+        return false;
+    }
+    //隐藏二维码
+    function hideQrcodeArea(_type) {
+        if (intervalQrcode) {
+                clearInterval(intervalQrcode);
+                intervalQrcode = null;
+        }
+        if (typeof(xrdLoginInterval)!="undefined") {
+                if(xrdLoginInterval){
+                        clearInterval(xrdLoginInterval);
+                xrdLoginInterval = null;
+                }
+        }
+        if (typeof(xrdRefreshCodeInterval)!="undefined") {
+                if(xrdRefreshCodeInterval){
+                        clearInterval(xrdRefreshCodeInterval);
+                xrdRefreshCodeInterval = null;
+                }
+        }
+        var wrapperDiv = topWin.document.getElementById("wrapper");
+        var loginBtnCloseDiv = topWin.document.querySelector(".loginBtnClose");
+        var winH = topWin.innerWidth;
+        if((winName === "loginPreBtnIframe" || winName === "") && winURL.indexOf("loginFrom=loginPortal") > -1){
+            //登录前门户，右上角登录框弹出的iframe
+            topWin.$("body").removeClass("loginPreBtnIframePage");
+            loginPreBtnIframeDiv.style.top = oldPostion["loginPreBtnIframeDiv"].top;
+            loginPreBtnIframeDiv.style.right = oldPostion["loginPreBtnIframeDiv"].right;
+            loginPreBtnIframeDiv.style.width = oldPostion["loginPreBtnIframeDiv"].width;
+            loginPreBtnIframeDiv.style.height = oldPostion["loginPreBtnIframeDiv"].height;
+            loginPreBtnIframe.style.width = oldPostion["loginPreBtnIframeDiv"].width;
+            loginPreBtnIframe.style.height = oldPostion["loginPreBtnIframeDiv"].height;
+            loginBtnCloseDiv.style.display = "block";
+            $("#QrcodeArea").hide();
+        }else if(window.name === "IframeSectionTemplete" && winURL.indexOf("loginFrom=loginPortal") > -1){
+            //登录前门户，登录栏目
+            topWin.$("body").removeClass("IframeSectionTemplete");
+            topWin.document.documentElement.style.overflow = "";
+            loginSectionDiv.parentNode.style.height = oldPostion["loginSectionParentDiv"].height + "px";
+            loginSectionDiv.style.height = oldPostion["loginSectionDiv"].height + "px";
+            $(loginSectionDiv).parents(".col").css("zIndex","");
+            //关闭的时候  去掉标识
+            $(loginSectionDiv).removeClass("topmost");
+            IframeSectionTempleteDiv.style.height = oldPostion["IframeSectionTempleteDiv"].height + "px";
+            loginBtnCloseDiv.style.display = "block";
+            QrMask4LoginPreDiv.style.display = "none";
+            $("#QrcodeArea").hide();
+        }else{
+            $("#QrcodeArea").fadeOut();
+        }
+        return false;
+    }
+
+</script>
+
+<style>body{background-color: }#login_button{background-color: }.fromLoginPrePortal .login_bottom{background-color: }</style></body></html>

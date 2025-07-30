@@ -1,0 +1,132 @@
+name: OA System Workflow
+description: Automated workflow for OA System
+steps:
+  - name: Go to OA System
+    action: browser_goto
+    params:
+      url: https://oa.topprismdata.com/seeyon/main.do
+
+  - name: Type username
+    action: browser_fill
+    params:
+      selector: '#login_username'
+      value: guohb@topprism.com
+
+  - name: Type password
+    action: browser_fill
+    params:
+      selector: '#login_password1'
+      value: LJSJ@123456
+
+  - name: Click password field (as per Selenium script)
+    action: browser_click
+    params:
+      selector: '#login_password1'
+
+  - name: Click login area div (as per Selenium script)
+    action: browser_click
+    params:
+      selector: 'xpath=//*[@id="login_area_div"]/div/div/div[2]'
+
+  - name: Click login button
+    action: browser_click
+    params:
+      selector: '#submit_button'
+
+  - name: Click LJCW04-Travel Expense Reimbursement Form (opens new window)
+    action: browser_click
+    params:
+      selector: a:text("LJCW04-差旅费报销单")
+      opens_new_window: true
+
+  - name: Wait for iframe to be visible
+    action: browser_wait_until_element_is_visible
+    params:
+      selector: 'iframe#zwIframe'
+  - name: Switch to iframe
+    action: browser_switch_to_frame
+    params:
+      selector: 'iframe#zwIframe'
+
+  - name: Wait for dropdown expand icon to be visible
+    action: browser_wait_until_element_is_visible
+    params:
+      selector: 'i.cap-icon-shu-zhankai'
+
+  - name: Wait for dropdown expand icon to be visible
+    action: browser_wait_until_element_is_visible
+    params:
+      selector: 'i.cap-icon-shu-zhankai'
+
+  - name: Click dropdown expand icon
+    action: browser_click
+    params:
+      selector: 'i.cap-icon-shu-zhankai'
+
+  - name: Click "棱镜极智能（北京）"
+    action: browser_click
+    params:
+      selector: 'div.cap4-select__option:text("棱镜极智能（北京）")'
+
+  - name: Type 'c' into input.is-active
+    action: browser_fill
+    params:
+      selector: 'input.is-active'
+      value: c
+
+  - name: Clear input.is-active
+    action: browser_fill
+    params:
+      selector: 'input.is-active'
+      value: ''
+
+  - name: Type '出差' into input.is-active
+    action: browser_fill
+    params:
+      selector: 'input.is-active'
+      value: 出差
+
+  - name: Click "导入数据"
+    action: browser_click
+    params:
+      selector: 'span:text("导入数据")'
+
+  - name: Click "选择文件"
+    action: browser_click
+    params:
+      selector: 'span:text("选择文件")'
+
+  - name: Click first "确定" button
+    action: browser_click
+    params:
+      selector: '#b1'
+
+  - name: Click "下一步" button
+    action: browser_click
+    params:
+      selector: '#layui-layer-btn-next'
+
+  - name: Click second "确定" button
+    action: browser_click
+    params:
+      selector: '#layui-layer-btn-sure'
+
+  - name: Click attachment icon
+    action: browser_click
+    params:
+      selector: 'div.icon.CAP.cap-icon-fujian'
+
+  - name: Click third "确定" button
+    action: browser_click
+    params:
+      selector: '#b1'
+
+  - name: Switch back to main page
+    action: browser_switch_to_frame
+    params:
+      selector: '__main_page__'
+
+  - name: Click "保存待发" button
+    action: browser_click
+    params:
+      selector: '#saveDraft_span'
