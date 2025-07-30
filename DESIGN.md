@@ -14,24 +14,34 @@
 
 ```mermaid
 graph TD
-    A[用户] -->|操作| B(Electron 桌面应用 / React 前端);
+    A[用户] -->|上传文件| B(React 前端应用);
     B -->|REST API 调用| C{Flask 后端 API};
-    C -->|创建子进程调用| E(Robocorp RPA Worker);
-    E -->|与外部系统交互| F[业务系统 (OA/ERP)];
-    C -->|返回任务ID| B;
-    B -->|轮询任务状态| C;
+    C -->|创建子进程调用| D(Robocorp RPA Worker);
+    D -->|调用 AI 服务 (阶段一)| E[LLM (文档理解)];
+    D -->|调用 AI 服务 (阶段二)| F[LLM (需求理解/映射生成)];
+    D -->|调用 AI 服务 (阶段三)| G[Python (机械填表)];
+    D -->|与业务系统交互| H[业务系统 (OA/ERP)];
+    H -->|返回结果| D;
+    D -->|更新状态/结果| C;
+    C -->|返回状态/结果| B;
 ```
 
-### 1.2 数据流 (OA 报销流程示例)
+### 1.2 数据流 (AI 驱动的报销流程示例)
 
-1.  用户在 React 前端界面中，选择“OA 报销流程”并点击执行。
-2.  前端将请求发送到 Flask 后端的 `POST /api/tasks` 端点。
-3.  后端根据请求，创建一个包含 `replay.yaml` 路径和所需参数的 `replay_input.json` 文件。
-4.  后端通过 `subprocess.Popen` 启动一个子进程，执行 `python -m robocorp.tasks run robots/workflow_executor.py` 命令，并通过环境变量传入 `replay_input.json` 的路径。
-5.  Robocorp Worker (`workflow_executor.py`) 启动，解析 `replay.yaml` 文件。
-6.  Worker 按照 YAML 中定义的步骤，通过 Playwright 驱动浏览器，执行登录、`iframe` 切换、表单填写、文件上传等一系列操作。
-7.  任务完成后，子进程退出。
-8.  前端通过轮询 `GET /api/tasks/{task_id}` 来获取任务的最终状态（在当前实现中，此部分为简化模型）。
+1.  用户在 React 前端界面中，批量上传多张票据凭证（图片或PDF）。
+2.  前端将文件发送到 Flask 后端的 `POST /api/tasks` 端点。
+3.  后端保存文件，并启动一个 Robocorp Worker (`workflow_executor.py`) 子进程，将所有文件路径作为输入传递。
+4.  **RPA Worker 启动，执行 `ai_fill_reimbursement_excel` 动作：**
+    a.  **阶段一 (文档理解):** Worker 调用 `ai_services.classify_document()` 和 `ai_services.extract_document_data()`，对所有上传的票据进行智能分类和结构化数据提取。
+    b.  **阶段二 (需求理解/映射生成):** Worker 调用 `ai_services.generate_excel_mapping()` (新函数)，将提取出的结构化数据和预定义的 Excel 模板描述（自然语言）发送给 LLM。LLM 返回一个精确的“填表指令”JSON。
+    c.  **阶段三 (机械填表):** Worker 调用 `ai_services.fill_excel_template()` (新函数)，根据 LLM 返回的填表指令，使用 `openpyxl` 库，将数据填入一个空白的 Excel 模板，并保存为新的 Excel 文件。
+5.  **RPA Worker 继续执行 UI 自动化：**
+    a.  登录 OA 系统。
+    b.  导航到报销表单。
+    c.  **第一次上传:** 点击“导入数据”，上传由 AI 填好的 Excel 明细文件。
+    d.  **第二次上传:** 循环点击“附件”，批量上传所有原始的票据凭证文件。
+    e.  提交报销单。
+6.  任务完成后，RPA Worker 更新任务状态，子进程退出。
 
 ## 2. 核心组件设计
 
@@ -47,16 +57,20 @@ graph TD
     *   **上下文切换:** `browser_switch_to_frame` (支持 `__main_page__` 特殊标识符)
     *   **文件处理:** `browser_upload_file`
     *   **高级动作:** `browser_login_human_like` (用于处理加密登录)
+    *   **AI 驱动动作:** `ai_fill_reimbursement_excel` (新动作，封装了三阶段 AI 处理逻辑)
 *   **变量替换:** 支持 `{{ a.b.c }}` 格式的变量语法，允许在工作流的不同步骤之间传递数据。
 *   **错误处理与日志记录:** 内置了健壮的 `try...except` 机制，在任何步骤失败时，都能自动截取屏幕快照 (`_take_error_screenshot`) 并保存当时的页面源代码 (`_proactively_save_source`)，极大地提升了调试效率。
 
 ### 2.2 AI 服务层 (`src/ai_services.py`)
 
-该模块负责封装与大模型 (LLM) 的所有交互，为上层应用提供统一、简洁的接口。
+该模块是整个平台智能化的核心，负责封装与大模型 (LLM) 的所有交互，并实现三阶段智能文档处理逻辑。
 
 *   **多模型支持:** 设计上支持本地 LLM (通过 `LOCAL_LLM_URL` 环境变量配置) 和云端 LLM API 的切换和回退。
-*   **动态 Prompt 构建:** `_build_llm_prompt` 方法能够根据不同的输入（如录制的步骤、现有的 YAML、用户的自然语言指令）动态地构建最优的 Prompt。
-*   **智能文档处理 (IDP):** 通过读取 `config/invoice_configs.yaml` 中的配置，可以为不同类型的票据生成定制化的提取 Prompt，实现了高度可配置的非结构化数据提取能力。
+*   **三阶段智能文档处理函数:**
+    *   `classify_document(file_path: str) -> str`: **阶段一**。调用多模态 LLM 对文档进行智能分类，返回文档类型 ID (例如 `jipiao`, `vat_general_invoice`)。
+    *   `extract_document_data(file_path: str, document_type: str) -> Dict`: **阶段一**。根据文档类型和 `config/invoice_configs.yaml` 中的模板，调用 LLM 提取结构化数据。
+    *   `generate_excel_mapping(extracted_data: List[Dict], excel_description: str) -> List[Dict]`: **阶段二**。接收提取出的结构化数据和 Excel 模板的自然语言描述，调用 LLM 生成数据映射指令。
+    *   `fill_excel_template(template_path: str, mapping_instructions: List[Dict]) -> str`: **阶段三**。接收空白 Excel 模板路径和映射指令，使用 `openpyxl` 库填充 Excel，并返回填充后的 Excel 路径。
 
 ## 3. 关键技术方案剖析
 
