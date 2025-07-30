@@ -46,7 +46,7 @@ steps:
     action: browser_fill
     params:
       selector: '#field0006_id input'
-      value: 出差
+      value: 出差-此流程由GENAI生成
 
   - name: Click "导入数据" button
     action: browser_click
@@ -170,11 +170,6 @@ steps:
     params:
       selector: 'div.icon.CAP.cap-icon-fujian'
 
-  - name: Pause for manual inspection
-    action: browser_wait
-    params:
-      timeout: 30000
-
   - name: Switch back to main page to find attachment dialog
     action: browser_switch_to_frame
     params:
@@ -214,7 +209,7 @@ steps:
       state: 'detached'
       timeout: 15000
 
-  - name: Click "保存待发" button
-    action: browser_click
+  - name: Click "保存待发" button using JavaScript
+    action: browser_js_click
     params:
-      selector: '#saveDraft_span'
+      selector: '#saveDraft_a'
